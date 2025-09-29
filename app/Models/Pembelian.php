@@ -8,6 +8,7 @@ class Pembelian extends Model
 {
     protected $connection = 'mongodb';
     protected $guarded = ['_id'];
+    protected $collection = 'pembelians';
 
     /**
      * The attributes that are mass assignable.

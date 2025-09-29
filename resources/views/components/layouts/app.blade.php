@@ -1,45 +1,55 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="layout-menu-fixed" data-base-url="{{url('/')}}" data-framework="laravel">
-  <head>
-    @include('partials.head')
-  </head>
 
-  <body>
+<head>
+  @include('partials.head')
+</head>
 
-    <div class="layout-wrapper layout-content-navbar">
-      <div class="layout-container">
+<body>
 
-        <!-- Layout Content -->
-        <x-layouts.menu.vertical :title="$title ?? null"></x-layouts.menu.vertical>
-        <!--/ Layout Content -->
+  <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
 
-        <!-- Layout container -->
-        <div class="layout-page">
-          <!-- Navbar -->
-          <x-layouts.navbar.default :title="$title ?? null"></x-layouts.navbar.default>
-          <!--/ Navbar -->
+      <!-- Layout Content -->
+      <x-layouts.menu.vertical :title="$title ?? null"></x-layouts.menu.vertical>
+      <!--/ Layout Content -->
 
-          <!-- Content wrapper -->
-          <div class="content-wrapper">
-            <!-- Content -->
-            <div class="container-xxl flex-grow-1 container-p-y">
-              {{ $slot }}
-            </div>
-            <!-- / Content -->
+      <!-- Layout container -->
+      <div class="layout-page">
+        <!-- Navbar -->
+        <x-layouts.navbar.default :title="$title ?? null"></x-layouts.navbar.default>
+        <!--/ Navbar -->
 
-            <!-- Footer -->
-            <x-layouts.footer.default :title="$title ?? null"></x-layouts.footer.default>
-            <!--/ Footer -->
-            <div class="content-backdrop fade"></div>
-            <!-- / Content wrapper -->
+        <!-- Content wrapper -->
+        <div class="content-wrapper">
+          <!-- Content -->
+          <div class="container-xxl flex-grow-1 container-p-y">
+            {{ $slot }}
           </div>
-        </div>
-        <!-- / Layout page -->
-      </div>
-    </div>
+          <!-- / Content -->
 
-    <!-- Include Scripts -->
-    @include('partials.scripts')
-    <!-- / Include Scripts -->
-  </body>
+          <!-- Footer -->
+          <x-layouts.footer.default :title="$title ?? null"></x-layouts.footer.default>
+          <!--/ Footer -->
+          <div class="content-backdrop fade"></div>
+          <!-- / Content wrapper -->
+        </div>
+      </div>
+      <!-- / Layout page -->
+    </div>
+  </div>
+
+  <!-- Include Scripts -->
+  @include('partials.scripts')
+  <!-- / Include Scripts -->
+
+  <!-- Pop up -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  @livewireScripts
+  {{-- tempat semua script tambahan dari komponen Livewire --}}
+  @stack('scripts')
+
+</body>
+
 </html>

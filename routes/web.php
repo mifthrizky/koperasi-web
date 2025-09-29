@@ -18,11 +18,19 @@ Route::middleware(['auth'])->group(function () {
   Volt::route('settings/password', 'settings.password')->name('settings.password');
 
   // === ROUTE SIDEBAR ===
-  Volt::route('data/pembelian', 'data.pembelian')->name('data.pembelian');
-  Volt::route('data/penjualan', 'data.penjualan')->name('data.penjualan');
-  Volt::route('data/pengembalian', 'data.pengembalian')->name('data.pengembalian');
-  Volt::route('data/stock-opname', 'data.stock-opname')->name('data.stock-opname');
+  // Route pembelian
+  Volt::route('data/pembelian', 'data.pembelian.index')->name('pembelian.index');
+  Volt::route('data/pembelian/tambah', 'data.pembelian.create')->name('pembelian.create');
+  Volt::route('data/pembelian/{pembelian}/edit', 'data.pembelian.edit')->name('pembelian.edit');
+
+
+
+
+  Volt::route('data/penjualan', 'data.penjualan.index')->name('penjualan.index');
+  Volt::route('data/pengembalian', 'data.pengembalian.index')->name('pengembalian.index');
+  Volt::route('data/stock-opname', 'data.stock-opname.index')->name('stock-opname.index');
   // ======================
+
 });
 
 require __DIR__ . '/auth.php';

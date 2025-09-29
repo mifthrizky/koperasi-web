@@ -20,28 +20,28 @@
     </li>
 
     <li class="menu-item {{ request()->routeIs('data.pembelian') ? 'active' : '' }}">
-      <a class="menu-link" href="{{ route('data.pembelian') }}" wire:navigate>
+      <a class="menu-link" href="{{ route('pembelian.index') }}" wire:navigate>
         <i class="menu-icon tf-icons bx bx-cart-alt"></i>
         <div class="text-truncate">Data Pembelian</div>
       </a>
     </li>
 
     <li class="menu-item {{ request()->routeIs('data.penjualan') ? 'active' : '' }}">
-      <a class="menu-link" href="{{ route('data.penjualan') }}" wire:navigate>
+      <a class="menu-link" href="{{ route('penjualan.index') }}" wire:navigate>
         <i class="menu-icon tf-icons bx bx-line-chart"></i>
         <div class="text-truncate">Data Penjualan</div>
       </a>
     </li>
 
     <li class="menu-item {{ request()->routeIs('data.pengembalian') ? 'active' : '' }}">
-      <a class="menu-link" href="{{ route('data.pengembalian') }}" wire:navigate>
+      <a class="menu-link" href="{{ route('pengembalian.index') }}" wire:navigate>
         <i class="menu-icon tf-icons bx bx-archive-out"></i>
         <div class="text-truncate">Data Pengembalian</div>
       </a>
     </li>
 
     <li class="menu-item {{ request()->routeIs('data.stock-opname') ? 'active' : '' }}">
-      <a class="menu-link" href="{{ route('data.stock-opname') }}" wire:navigate>
+      <a class="menu-link" href="{{ route('stock-opname.index') }}" wire:navigate>
         <i class="menu-icon tf-icons bx bx-package"></i>
         <div class="text-truncate">Data Stock Opname</div>
       </a>
