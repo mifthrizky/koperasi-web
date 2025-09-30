@@ -181,13 +181,13 @@ new class extends Component
         {{-- Tabel Data --}}
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
-                <thead>
+                <thead class="table-light">
                     <tr>
                         <th>Kode Item</th>
                         <th>Nama Item</th>
                         <th>Jenis</th>
                         <th>Jumlah</th>
-                        <th wire:click="sort('Total_Harga')" style="cursor: pointer;">
+                        <th wire:click=" sort('Total_Harga')" style="cursor: pointer;">
                             Total Harga
                             <i class="bx bx-sort-alt-2 text-muted"></i>
                         </th>

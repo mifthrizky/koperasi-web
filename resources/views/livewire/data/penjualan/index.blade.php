@@ -181,7 +181,7 @@ new class extends Component
         {{-- Tabel Data --}}
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
-                <thead>
+                <thead class="table-light">
                     <tr>
                         <th>Kode Item</th>
                         <th>Nama Item</th>

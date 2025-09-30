@@ -20,9 +20,30 @@ class Barang extends Model
         'Kode_Item',
         'Nama_Item',
         'Jenis',
-        'Satuan',
-        'Harga_Satuan',
-        'Bulan',
-        'Tahun',
+        'Harga_Satuan'
     ];
+
+    // Relasi ke Pembelian
+    public function pembelians()
+    {
+        return $this->hasMany(Penjualan::class, 'Kode_Item', 'Kode_Item');
+    }
+
+    // Relasi ke Penjualan
+    public function penjualans()
+    {
+        return $this->hasMany(Penjualan::class, 'Kode_Item', 'Kode_Item');
+    }
+
+    // Relasi ke Retur
+    public function returs()
+    {
+        return $this->hasMany(Retur::class, 'Kode_Item', 'Kode_Item');
+    }
+
+    // Relasi ke StockOpname
+    public function StockOpname()
+    {
+        return $this->hasMany(Retur::class, 'Kode_Item', 'Kode_Item');
+    }
 }

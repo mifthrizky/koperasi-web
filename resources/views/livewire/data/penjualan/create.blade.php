@@ -2,7 +2,7 @@
 
 use Livewire\Volt\Component;
 use App\Models\Penjualan;
-use App\Models\Pembelian;
+use App\Models\Barang;
 use Livewire\Attributes\Rule;
 
 new class extends Component
@@ -35,16 +35,16 @@ new class extends Component
     public bool $showItemFields = false;
 
     /**
-     * Cari data pembelian berdasarkan kode_item
+     * Cari data barang berdasarkan kode_item
      */
     public function cariItem()
     {
-        $pembelian = Pembelian::where('Kode_Item', (int) $this->kode_item)->first();
+        $barang = Barang::where('Kode_Item', (int) $this->kode_item)->first();
 
-        if ($pembelian) {
-            $this->nama_item = $pembelian['Nama_Item'] ?? '';
-            $this->jenis     = $pembelian['Jenis'] ?? '';
-            $this->satuan    = $pembelian['Satuan'] ?? '';
+        if ($barang) {
+            $this->nama_item = $barang['Nama_Item'] ?? '';
+            $this->jenis     = $barang['Jenis'] ?? '';
+            $this->satuan    = '';
 
             $this->showItemFields = true;
             session()->flash('success', 'Data berhasil ditemukan.');
@@ -54,7 +54,7 @@ new class extends Component
             $this->satuan    = '';
             $this->showItemFields = false;
 
-            session()->flash('error', 'Data tidak ditemukan untuk Kode Item: '.$this->kode_item);
+            session()->flash('error', 'Data tidak ditemukan untuk Kode Item: ' . $this->kode_item);
         }
     }
 
@@ -92,13 +92,13 @@ new class extends Component
             <h5 class="mb-0">Form Tambah Data Penjualan</h5>
         </div>
         <div class="card-body">
-            
+
             <!-- Notifikasi -->
             @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+            <div class="alert alert-success">{{ session('success') }}</div>
             @endif
             @if (session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
+            <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
             <form wire:submit="save">
@@ -107,80 +107,80 @@ new class extends Component
                 <div class="mb-3">
                     <label for="kode_item" class="form-label">Kode Item</label>
                     <div class="input-group">
-                        <input type="number" 
-                               class="form-control @error('kode_item') is-invalid @enderror" 
-                               id="kode_item" 
-                               wire:model="kode_item" 
-                               placeholder="Contoh: 101">
-                        <button type="button" class="btn btn-outline-primary" 
-                                wire:click="cariItem" 
-                                wire:target="cariItem" 
-                                wire:loading.attr="disabled">
+                        <input type="number"
+                            class="form-control @error('kode_item') is-invalid @enderror"
+                            id="kode_item"
+                            wire:model="kode_item"
+                            placeholder="Contoh: 101">
+                        <button type="button" class="btn btn-outline-primary"
+                            wire:click="cariItem"
+                            wire:target="cariItem"
+                            wire:loading.attr="disabled">
                             <span wire:loading.remove wire:target="cariItem">Search</span>
                             <span wire:loading wire:target="cariItem">Mencari...</span>
                         </button>
-                        @error('kode_item') 
-                            <div class="invalid-feedback d-block">{{ $message }}</div> 
+                        @error('kode_item')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
 
                 <!-- Field otomatis hanya muncul setelah Search -->
                 @if($showItemFields)
-                    <div class="mb-3">
-                        <label for="nama_item" class="form-label">Nama Item</label>
-                        <input type="text" class="form-control @error('nama_item') is-invalid @enderror" 
-                               id="nama_item" wire:model="nama_item" readonly placeholder="Otomatis dari pembelian">
-                        @error('nama_item') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <div class="mb-3">
+                    <label for="nama_item" class="form-label">Nama Item</label>
+                    <input type="text" class="form-control @error('nama_item') is-invalid @enderror"
+                        id="nama_item" wire:model="nama_item" readonly placeholder="Otomatis dari barang">
+                    @error('nama_item') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="mb-3">
+                    <label for="jenis" class="form-label">Jenis</label>
+                    <input type="text" class="form-control @error('jenis') is-invalid @enderror"
+                        id="jenis" wire:model="jenis" readonly placeholder="Otomatis dari barang">
+                    @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="jumlah" class="form-label">Jumlah</label>
+                        <input type="number" class="form-control @error('jumlah') is-invalid @enderror"
+                            id="jumlah" wire:model="jumlah" placeholder="Contoh: 50">
+                        @error('jumlah') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="mb-3">
-                        <label for="jenis" class="form-label">Jenis</label>
-                        <input type="text" class="form-control @error('jenis') is-invalid @enderror" 
-                               id="jenis" wire:model="jenis" readonly placeholder="Otomatis dari pembelian">
-                        @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="col-md-6">
+                        <label for="satuan" class="form-label">Satuan</label>
+                        <input type="text" class="form-control @error('satuan') is-invalid @enderror"
+                            id="satuan" wire:model="satuan" placeholder="Contoh: PCS, BOX, LUSIN">
+                        @error('satuan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="jumlah" class="form-label">Jumlah</label>
-                            <input type="number" class="form-control @error('jumlah') is-invalid @enderror" 
-                                   id="jumlah" wire:model="jumlah" placeholder="Contoh: 50">
-                            @error('jumlah') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-md-6">
-                            <label for="satuan" class="form-label">Satuan</label>
-                            <input type="text" class="form-control @error('satuan') is-invalid @enderror" 
-                                   id="satuan" wire:model="satuan" readonly placeholder="Otomatis dari pembelian">
-                            @error('satuan') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                    </div>
+                </div>
                 @endif
 
                 <div class="mb-3">
                     <label for="total_harga" class="form-label">Total Harga (Rp)</label>
-                    <input type="number" class="form-control @error('total_harga') is-invalid @enderror" 
-                           id="total_harga" wire:model="total_harga" placeholder="Contoh: 750000">
+                    <input type="number" class="form-control @error('total_harga') is-invalid @enderror"
+                        id="total_harga" wire:model="total_harga" placeholder="Contoh: 750000">
                     @error('total_harga') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
                 <div class="mb-3">
                     <label for="bulan" class="form-label">Bulan</label>
-                    <input type="text" class="form-control @error('bulan') is-invalid @enderror" 
-                           id="bulan" wire:model="bulan" placeholder="Contoh: JANUARI">
+                    <input type="text" class="form-control @error('bulan') is-invalid @enderror"
+                        id="bulan" wire:model="bulan" placeholder="Contoh: JANUARI">
                     @error('bulan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="tahun" class="form-label">Tahun</label>
-                    <input type="number" class="form-control @error('tahun') is-invalid @enderror" 
-                           id="tahun" wire:model="tahun" placeholder="Contoh: 2025">
+                    <input type="number" class="form-control @error('tahun') is-invalid @enderror"
+                        id="tahun" wire:model="tahun" placeholder="Contoh: 2025">
                     @error('tahun') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <!-- Tombol Simpan -->
                 <div class="d-flex justify-content-end mt-4">
                     <a href="{{ route('penjualan.index') }}" class="btn btn-secondary me-2" wire:navigate>Batal</a>
-                    <button type="submit" class="btn btn-primary" 
-                            wire:target="save" 
-                            wire:loading.attr="disabled">
+                    <button type="submit" class="btn btn-primary"
+                        wire:target="save"
+                        wire:loading.attr="disabled">
                         <span wire:loading.remove wire:target="save">Simpan</span>
                         <span wire:loading wire:target="save">Menyimpan...</span>
                     </button>

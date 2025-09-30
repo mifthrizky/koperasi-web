@@ -3,17 +3,24 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Models\StockOpname;
 use App\Models\Pembelian;
-use App\Models\Barang;
+use App\Models\Penjualan;
 
-class SyncBarang extends Command
+class SyncStockOpname extends Command
 {
-    protected $signature = 'sync:barang';
-    protected $description = 'Sinkronisasi data barang dari pembelian';
+    protected $signature = 'sync:stockopname';
+    protected $description = 'Sinkronisasi data stock opname dari pembelian';
 
     public function handle()
     {
         $this->info('Mulai sinkronisasi...');
+
+        $penjualans = Penjualan::all();
+
+        $totalPenjualanPerItem = $penjualans->groupBy('Kode_Item')->map(function ($items) {
+            return $items->sum('Jumlah');
+        });
 
         $pembelians = Pembelian::all();
 
@@ -32,32 +39,28 @@ class SyncBarang extends Command
         foreach ($grouped as $kode => $items) {
             $processed++;
 
-            // Menghitung harga satuan
             $stokMasuk  = $items->sum('Jumlah');
+            $stokKeluar = $totalPenjualanPerItem->get($kode, 0);
+            $stokSistem  = $stokMasuk - $stokKeluar;
+
             $totalPembHarga = $items->sum(fn($i) => isset($i->Total_Harga) ? (float) $i->Total_Harga : 0);
 
             // Ambil sample metadata
             $sample = $items->last() ?? $items->first();
             $nama   = $sample->Nama_Item ?? null;
-            $jenis  = $sample->Jenis ?? null;
-            $satuan = $sample->Satuan ?? null;
-
-            // Hitung harga satuan
-            $hargaSatuan = $stokMasuk > 0
-                ? ($totalPembHarga / $stokMasuk)
-                : 0;
 
             // Simpan/update
             $attributes = ['Kode_Item' => $kode];
             $values = [
                 'Nama_Item'    => $nama,
-                'Jenis'        => $jenis,
-                'Harga_Satuan' => $hargaSatuan,
                 'Stok_Masuk'   => $stokMasuk,
-                'Satuan'       => $satuan,
+                'Stok_Keluar'  => $stokKeluar,
+                'Stok_Sistem'  => $stokSistem,
+                'Stock_Opname' => null,
+                'Keterangan'   => null
             ];
 
-            $model = Barang::updateOrCreate($attributes, $values);
+            $model = StockOpname::updateOrCreate($attributes, $values);
 
             if ($model->wasRecentlyCreated) {
                 $created++;

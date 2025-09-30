@@ -114,30 +114,31 @@ new class extends Component
         </div>
 
         {{-- Tabel Data --}}
-        <div class="table-responsive text-nowrap">
-            <table class="table table-hover">
-                <thead>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
                     <tr>
-                        <th>Kode Item</th>
-                        <th>Nama Item</th>
-                        <th>Jenis</th>
-                        <th wire:click="sort('Harga_Satuan')" style="cursor: pointer;">
-                            Harga Satuan
-                            <i class="bx bx-sort-alt-2 text-muted"></i>
+                        <th style="width: 120px;">Kode Item</th>
+                        <th style="max-width: 250px;">Nama Item</th>
+                        <th style="width: 80px;">Jenis</th>
+                        <th style="width: 120px; cursor: pointer;" wire:click="sort('Harga_Satuan')">
+                            Harga Satuan <i class="bx bx-sort-alt-2 text-muted"></i>
                         </th>
-                        <th>Aksi</th>
+                        <th style="width: 80px;">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="table-border-bottom-0">
+                <tbody>
                     @forelse ($barangs as $barang)
-                    <tr wire:key="{{ $barang->id }}">
+                    <tr>
                         <td><strong>{{ $barang->Kode_Item }}</strong></td>
-                        <td>{{ $barang->Nama_Item }}</td>
-                        <td><span class="badge bg-label-primary me-1">{{ $barang->Jenis }}</span></td>
+                        <td class="text-truncate" style="max-width: 250px;" title="{{ $barang->Nama_Item }}">
+                            {{ $barang->Nama_Item }}
+                        </td>
+                        <td><span class="badge bg-label-primary">{{ $barang->Jenis }}</span></td>
                         <td>Rp {{ number_format($barang->Harga_Satuan, 0, ',', '.') }}</td>
                         <td>
                             <div class="dropdown">
-                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <button class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
                                 <div class="dropdown-menu">
@@ -153,14 +154,13 @@ new class extends Component
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center py-3">
-                            Tidak ada data ditemukan.
-                        </td>
+                        <td colspan="8" class="text-center py-3">Tidak ada data ditemukan.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
 
         {{-- Paginasi --}}
         @if ($barangs->hasPages())
