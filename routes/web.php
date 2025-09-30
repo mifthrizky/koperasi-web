@@ -27,11 +27,19 @@ Route::middleware(['auth'])->group(function () {
   Volt::route('data/pembelian/tambah', 'data.pembelian.create')->name('pembelian.create');
   Volt::route('data/pembelian/{pembelian}/edit', 'data.pembelian.edit')->name('pembelian.edit');
 
+  Volt::route('data/pengembalian', 'data.pengembalian.index')->name('pengembalian.index');
+  Volt::route('data/pengembalian/tambah', 'data.pengembalian.create')->name('pengembalian.create');
+  Volt::route('data/pengembalian/{retur}/edit', 'data.pengembalian.edit')->name('retur.edit');
+
   Volt::route('data/penjualan', 'data.penjualan.index')->name('penjualan.index');
   Volt::route('data/penjualan/tambah', 'data.penjualan.create')->name('penjualan.create');
   Volt::route('data/penjualan/{penjualan}/edit', 'data.penjualan.edit')->name('penjualan.edit');
 
   Volt::route('data/pengembalian', 'data.pengembalian.index')->name('pengembalian.index');
+  Volt::route('data/pengembalian', 'data.pengembalian.index')->name('pengembalian.index');
+  Volt::route('data/pengembalian/tambah', 'data.pengembalian.create')->name('pengembalian.create');
+  Volt::route('data/pengembalian/{retur}/edit', 'data.pengembalian.edit')->name('retur.edit');
+  
   Volt::route('data/stock-opname', 'data.stock-opname.index')->name('stock-opname.index');
   // ======================
 
