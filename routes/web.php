@@ -39,7 +39,7 @@ Route::middleware(['auth'])->group(function () {
   Volt::route('data/pengembalian', 'data.pengembalian.index')->name('pengembalian.index');
   Volt::route('data/pengembalian/tambah', 'data.pengembalian.create')->name('pengembalian.create');
   Volt::route('data/pengembalian/{retur}/edit', 'data.pengembalian.edit')->name('retur.edit');
-  
+
   Volt::route('data/stock-opname', 'data.stock-opname.index')->name('stock-opname.index');
   // ======================
 

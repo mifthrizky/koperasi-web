@@ -2,6 +2,7 @@
 
 use Livewire\Volt\Component;
 use App\Models\Penjualan;
+use App\Models\StockOpname; // Import StockOpname
 use Livewire\Attributes\Rule;
 
 new class extends Component
@@ -43,18 +44,22 @@ new class extends Component
 
     public function update()
     {
-        $validated = $this->validate();
 
-        // cek unik Kode_Item
-        $isUnique = Penjualan::where('Kode_Item', $this->kode_item)
-            ->where('_id', '!=', $this->penjualan->id)
-            ->doesntExist();
+        // 1. Hitung selisih antara jumlah lama dan jumlah baru
+        $jumlahLama = $this->penjualan->Jumlah;
+        $jumlahBaru = (int) $this->jumlah;
+        $selisih = $jumlahBaru - $jumlahLama;
 
-        if (!$isUnique) {
-            $this->addError('kode_item', 'Kode item sudah digunakan.');
-            return;
+        // 2. Jika ada perubahan jumlah, update stok
+        if ($selisih !== 0) {
+            $stockItem = StockOpname::where('Kode_Item', (int)$this->penjualan->Kode_Item)->first();
+            if ($stockItem) {
+                // increment bisa menerima nilai positif (menambah) atau negatif (mengurangi)
+                $stockItem->increment('Stok_Keluar', $selisih);
+            }
         }
 
+        // 3. Update data penjualannya dengan memetakan properti ke nama kolom yang benar
         $this->penjualan->update([
             'Kode_Item'   => (int) $this->kode_item,
             'Nama_Item'   => $this->nama_item,
@@ -65,7 +70,7 @@ new class extends Component
             'Bulan'       => strtoupper($this->bulan),
         ]);
 
-        session()->flash('success', 'Data penjualan berhasil diperbarui.');
+        session()->flash('success', 'Data penjualan berhasil diperbarui dan stok telah disesuaikan.');
         return $this->redirectRoute('penjualan.index', navigate: true);
     }
 };
@@ -84,51 +89,51 @@ new class extends Component
             <form wire:submit="update">
                 <div class="mb-3">
                     <label for="kode_item" class="form-label">Kode Item</label>
-                    <input type="number" class="form-control @error('kode_item') is-invalid @enderror" 
-                           id="kode_item" wire:model="kode_item" readonly>
+                    <input type="number" class="form-control @error('kode_item') is-invalid @enderror"
+                        id="kode_item" wire:model="kode_item" readonly>
                     @error('kode_item') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="nama_item" class="form-label">Nama Item</label>
-                    <input type="text" class="form-control @error('nama_item') is-invalid @enderror" 
-                           id="nama_item" wire:model="nama_item" readonly>
+                    <input type="text" class="form-control @error('nama_item') is-invalid @enderror"
+                        id="nama_item" wire:model="nama_item" readonly>
                     @error('nama_item') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="jenis" class="form-label">Jenis</label>
-                    <input type="text" class="form-control @error('jenis') is-invalid @enderror" 
-                           id="jenis" wire:model="jenis" readonly>
+                    <input type="text" class="form-control @error('jenis') is-invalid @enderror"
+                        id="jenis" wire:model="jenis" readonly>
                     @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="jumlah" class="form-label">Jumlah</label>
-                        <input type="number" class="form-control @error('jumlah') is-invalid @enderror" 
-                               id="jumlah" wire:model="jumlah" placeholder="Contoh: 50">
+                        <input type="number" class="form-control @error('jumlah') is-invalid @enderror"
+                            id="jumlah" wire:model="jumlah" placeholder="Contoh: 50">
                         @error('jumlah') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-6">
                         <label for="satuan" class="form-label">Satuan</label>
-                        <input type="text" class="form-control @error('satuan') is-invalid @enderror" 
-                               id="satuan" wire:model="satuan" readonly>
+                        <input type="text" class="form-control @error('satuan') is-invalid @enderror"
+                            id="satuan" wire:model="satuan">
                         @error('satuan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label for="total_harga" class="form-label">Total Harga (Rp)</label>
-                    <input type="number" class="form-control @error('total_harga') is-invalid @enderror" 
-                           id="total_harga" wire:model="total_harga" placeholder="Contoh: 750000">
+                    <input type="number" class="form-control @error('total_harga') is-invalid @enderror"
+                        id="total_harga" wire:model="total_harga" placeholder="Contoh: 750000">
                     @error('total_harga') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="bulan" class="form-label">Bulan</label>
-                    <input type="text" class="form-control @error('bulan') is-invalid @enderror" 
-                           id="bulan" wire:model="bulan" placeholder="Contoh: JANUARI">
+                    <input type="text" class="form-control @error('bulan') is-invalid @enderror"
+                        id="bulan" wire:model="bulan" placeholder="Contoh: JANUARI">
                     @error('bulan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 

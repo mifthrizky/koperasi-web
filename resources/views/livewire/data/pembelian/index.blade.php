@@ -2,6 +2,7 @@
 
 use Livewire\Volt\Component;
 use App\Models\Pembelian;
+use App\Models\StockOpname; // Import StockOpname
 use Livewire\WithPagination;
 use Illuminate\Pagination\Paginator;
 use Livewire\Attributes\Computed;
@@ -18,18 +19,12 @@ new class extends Component
     public string $selectedMonth = '';
     public ?string $pembelianIdToDelete = null;
 
-    /**
-     * Menampilkan konfirmasi sebelum menghapus.
-     */
     public function confirmDelete(string $id)
     {
         $this->pembelianIdToDelete = $id;
         $this->dispatch('show-delete-confirmation');
     }
 
-    /**
-     * Menghapus data setelah dikonfirmasi.
-     */
     #[On('deleteConfirmed')]
     public function destroy()
     {
@@ -37,55 +32,43 @@ new class extends Component
             return;
         }
 
-        Pembelian::find($this->pembelianIdToDelete)?->delete();
-        $this->pembelianIdToDelete = null;
+        // --- BAGIAN KUNCI YANG DIPERBAIKI ---
+        $pembelian = Pembelian::find($this->pembelianIdToDelete);
 
-        session()->flash('success', 'Data berhasil dihapus.');
+        if ($pembelian) {
+            $stockItem = StockOpname::where('Kode_Item', $pembelian->Kode_Item)->first();
+            if ($stockItem) {
+                // Kurangi Stok_Masuk dengan jumlah yang dihapus
+                $stockItem->decrement('Stok_Masuk', $pembelian->Jumlah);
+            }
+            $pembelian->delete();
+            session()->flash('success', 'Data berhasil dihapus dan stok telah dikembalikan.');
+        } else {
+            session()->flash('error', 'Gagal menghapus data.');
+        }
+        // --- AKHIR BAGIAN PERBAIKAN ---
+
+        $this->pembelianIdToDelete = null;
     }
 
-    /**
-     * Menghitung daftar bulan unik untuk filter.
-     */
     #[Computed]
     public function months()
     {
-        $bulanDariDB = DB::getMongoDB()
-            ->selectCollection('pembelians')
-            ->distinct('Bulan');
-
+        // ... (fungsi months tidak berubah) ...
+        $bulanDariDB = DB::getMongoDB()->selectCollection('pembelians')->distinct('Bulan');
         $bulanDariDB = array_map(fn($b) => strtoupper(trim($b)), $bulanDariDB);
-
-        $urutanBulan = [
-            'JANUARI',
-            'FEBRUARI',
-            'MARET',
-            'APRIL',
-            'MEI',
-            'JUNI',
-            'JULI',
-            'AGUSTUS',
-            'SEPTEMBER',
-            'OKTOBER',
-            'NOVEMBER',
-            'DESEMBER'
-        ];
-
+        $urutanBulan = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
         return array_values(array_intersect($urutanBulan, $bulanDariDB));
     }
 
-    /**
-     * Mengatur paginasi saat komponen boot.
-     */
     public function boot()
     {
         Paginator::useBootstrap();
     }
 
-    /**
-     * Mengatur kolom untuk sorting.
-     */
     public function sort($column)
     {
+        // ... (fungsi sort tidak berubah) ...
         if ($this->sortBy === $column) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
@@ -95,25 +78,19 @@ new class extends Component
         $this->resetPage();
     }
 
-    /**
-     * Mereset halaman saat ada perubahan filter atau pencarian.
-     */
     public function updating($property)
     {
+        // ... (fungsi updating tidak berubah) ...
         if (in_array($property, ['search', 'selectedMonth'])) {
             $this->resetPage();
         }
     }
 
-    /**
-     * Mengambil data untuk di-render di view.
-     */
     public function with(): array
     {
+        // ... (fungsi with tidak berubah) ...
         $pembelians = Pembelian::query()
-            ->when($this->selectedMonth, function ($query) {
-                $query->where('Bulan', $this->selectedMonth);
-            })
+            ->when($this->selectedMonth, fn($query) => $query->where('Bulan', $this->selectedMonth))
             ->when($this->search, function ($query) {
                 $query->where(function ($subQuery) {
                     $subQuery->where('Nama_Item', 'like', '%' . $this->search . '%');
@@ -124,7 +101,6 @@ new class extends Component
             })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate(10);
-
         return [
             'pembelians' => $pembelians,
             'months' => $this->months(),
@@ -133,38 +109,39 @@ new class extends Component
 }; ?>
 
 <div>
-    {{-- Notifikasi Sukses --}}
+    {{-- Notifikasi --}}
     @if (session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif
+    @if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
 
-    {{-- Judul Halaman --}}
+    {{-- Sisa Kode View Tidak Berubah --}}
     <h4 class="py-3 mb-4">
         <span class="text-muted fw-light">Data Koperasi /</span> Data Pembelian
     </h4>
 
     <div class="card">
         <div class="card-header">
-            {{-- Header Card: Judul dan Tombol Tambah --}}
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">Tabel Data Pembelian</h5>
                 <a href="{{ route('pembelian.create') }}" class="btn btn-primary" wire:navigate>
                     <i class="bx bx-plus-circle me-1"></i> Tambah Data
                 </a>
             </div>
-
-            {{-- Baris Filter dan Pencarian --}}
             <div class="row">
                 <div class="col-md-4">
                     <select wire:model.live="selectedMonth" class="form-select">
                         <option value="">Semua Bulan</option>
                         @foreach($months as $month)
-                        <option value="{{ $month }}">
-                            {{ ucfirst(strtolower($month)) }}
-                        </option>
+                        <option value="{{ $month }}">{{ ucfirst(strtolower($month)) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -177,8 +154,6 @@ new class extends Component
                 </div>
             </div>
         </div>
-
-        {{-- Tabel Data --}}
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
                 <thead class="table-light">
@@ -188,8 +163,7 @@ new class extends Component
                         <th>Jenis</th>
                         <th>Jumlah</th>
                         <th wire:click=" sort('Total_Harga')" style="cursor: pointer;">
-                            Total Harga
-                            <i class="bx bx-sort-alt-2 text-muted"></i>
+                            Total Harga <i class="bx bx-sort-alt-2 text-muted"></i>
                         </th>
                         <th>Bulan</th>
                         <th>Aksi</th>
@@ -222,16 +196,12 @@ new class extends Component
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center py-3">
-                            Tidak ada data ditemukan.
-                        </td>
+                        <td colspan="7" class="text-center py-3">Tidak ada data ditemukan.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-
-        {{-- Footer Card: Paginasi --}}
         @if ($pembelians->hasPages())
         <div class="card-footer d-flex justify-content-center">
             {{ $pembelians->links('livewire::bootstrap') }}
@@ -240,7 +210,6 @@ new class extends Component
     </div>
 </div>
 
-{{-- Script untuk SweetAlert2 --}}
 @script
 <script>
     document.addEventListener('livewire:initialized', () => {

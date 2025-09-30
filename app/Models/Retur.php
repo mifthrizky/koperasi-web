@@ -29,8 +29,8 @@ class Retur extends Model
         'Tahun',
     ];
 
-    public function pembelian()
+    public function barang()
     {
-        return $this->belongsTo(Pembelian::class, 'Kode_Item', 'Kode_Item');
+        return $this->belongsTo(Barang::class, 'Kode_Item', 'Kode_Item');
     }
 }

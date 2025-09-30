@@ -1,7 +1,8 @@
 <?php
 
 use Livewire\Volt\Component;
-use App\Models\Retur; // Menggunakan model Retur
+use App\Models\Retur;
+use App\Models\StockOpname; // Import StockOpname
 use Livewire\WithPagination;
 use Illuminate\Pagination\Paginator;
 use Livewire\Attributes\Computed;
@@ -16,11 +17,8 @@ new class extends Component
     public string $sortBy = 'created_at';
     public string $sortDirection = 'desc';
     public string $selectedMonth = '';
-    public ?string $returIdToDelete = null; // Nama variabel disesuaikan
+    public ?string $returIdToDelete = null;
 
-    /**
-     * Menampilkan konfirmasi sebelum menghapus.
-     */
     public function confirmDelete(string $id)
     {
         $this->returIdToDelete = $id;
@@ -28,7 +26,7 @@ new class extends Component
     }
 
     /**
-     * Menghapus data setelah dikonfirmasi.
+     * Menghapus data DAN mengembalikan stok.
      */
     #[On('deleteConfirmed')]
     public function destroy()
@@ -37,53 +35,39 @@ new class extends Component
             return;
         }
 
-        Retur::find($this->returIdToDelete)?->delete(); // Menggunakan model Retur
-        $this->returIdToDelete = null;
+        // --- BAGIAN KUNCI YANG DIPERBAIKI ---
+        $retur = Retur::find($this->returIdToDelete);
 
-        session()->flash('success', 'Data berhasil dihapus.');
+        if ($retur) {
+            $stockItem = StockOpname::where('Kode_Item', $retur->Kode_Item)->first();
+            if ($stockItem) {
+                // Kurangi (decrement) Stok_Retur dengan jumlah yang dihapus
+                $stockItem->decrement('Stok_Retur', $retur->Jumlah);
+            }
+            $retur->delete();
+            session()->flash('success', 'Data berhasil dihapus dan stok telah dikembalikan.');
+        } else {
+            session()->flash('error', 'Gagal menghapus data.');
+        }
+        // --- AKHIR BAGIAN PERBAIKAN ---
+
+        $this->returIdToDelete = null;
     }
 
-    /**
-     * Menghitung daftar bulan unik untuk filter.
-     */
     #[Computed]
     public function months()
     {
-        $bulanDariDB = DB::getMongoDB()
-            ->selectCollection('returs') // Nama koleksi disesuaikan
-            ->distinct('Bulan');
-
+        $bulanDariDB = DB::getMongoDB()->selectCollection('returs')->distinct('Bulan');
         $bulanDariDB = array_map(fn($b) => strtoupper(trim($b)), $bulanDariDB);
-
-        $urutanBulan = [
-            'JANUARI',
-            'FEBRUARI',
-            'MARET',
-            'APRIL',
-            'MEI',
-            'JUNI',
-            'JULI',
-            'AGUSTUS',
-            'SEPTEMBER',
-            'OKTOBER',
-            'NOVEMBER',
-            'DESEMBER'
-        ];
-
+        $urutanBulan = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
         return array_values(array_intersect($urutanBulan, $bulanDariDB));
     }
 
-    /**
-     * Mengatur paginasi saat komponen boot.
-     */
     public function boot()
     {
         Paginator::useBootstrap();
     }
 
-    /**
-     * Mengatur kolom untuk sorting.
-     */
     public function sort($column)
     {
         if ($this->sortBy === $column) {
@@ -95,9 +79,6 @@ new class extends Component
         $this->resetPage();
     }
 
-    /**
-     * Mereset halaman saat ada perubahan filter atau pencarian.
-     */
     public function updating($property)
     {
         if (in_array($property, ['search', 'selectedMonth'])) {
@@ -105,15 +86,10 @@ new class extends Component
         }
     }
 
-    /**
-     * Mengambil data untuk di-render di view.
-     */
     public function with(): array
     {
-        $returs = Retur::query() // Menggunakan model Retur
-            ->when($this->selectedMonth, function ($query) {
-                $query->where('Bulan', $this->selectedMonth);
-            })
+        $returs = Retur::query()
+            ->when($this->selectedMonth, fn($query) => $query->where('Bulan', $this->selectedMonth))
             ->when($this->search, function ($query) {
                 $query->where(function ($subQuery) {
                     $subQuery->where('Nama_Item', 'like', '%' . $this->search . '%');
@@ -126,17 +102,23 @@ new class extends Component
             ->paginate(10);
 
         return [
-            'returs' => $returs, // Nama variabel diubah
+            'returs' => $returs,
             'months' => $this->months(),
         ];
     }
 }; ?>
 
 <div>
-    {{-- Notifikasi Sukses --}}
+    {{-- Notifikasi --}}
     @if (session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+    @if (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif
@@ -181,28 +163,24 @@ new class extends Component
         {{-- Tabel Data --}}
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
-                <thead>
+                <thead class="table-light">
                     <tr>
                         <th>Kode Item</th>
                         <th>Nama Item</th>
                         <th>Jumlah</th>
-                        <th>tanggal diretur</th>
-                        <th>tgl update retur</th>
+                        <th>Tanggal Diretur</th>
                         <th>Bulan</th>
-                        <th>Tahun</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="table-border-bottom-0">
-                    @forelse ($returs as $retur) {{-- Nama variabel diubah --}}
+                    @forelse ($returs as $retur)
                     <tr wire:key="{{ $retur->id }}">
                         <td><strong>{{ $retur->Kode_Item }}</strong></td>
                         <td>{{ $retur->Nama_Item }}</td>
                         <td>{{ $retur->Jumlah }} {{ $retur->Satuan }}</td>
                         <td>{{ $retur->created_at->format('d-m-Y H:i') }}</td>
-                        <td>{{ $retur->updated_at->format('d-m-Y H:i') }}</td>
                         <td>{{ $retur->Bulan }}</td>
-                        <td>{{ $retur->Tahun }}</td>
                         <td>
                             <div class="dropdown">
                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
@@ -221,7 +199,7 @@ new class extends Component
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="text-center py-3">
+                        <td colspan="6" class="text-center py-3">
                             Tidak ada data ditemukan.
                         </td>
                     </tr>

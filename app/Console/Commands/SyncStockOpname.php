@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\StockOpname;
 use App\Models\Pembelian;
 use App\Models\Penjualan;
+use App\Models\Retur;
 
 class SyncStockOpname extends Command
 {
@@ -19,6 +20,11 @@ class SyncStockOpname extends Command
         $penjualans = Penjualan::all();
 
         $totalPenjualanPerItem = $penjualans->groupBy('Kode_Item')->map(function ($items) {
+            return $items->sum('Jumlah');
+        });
+
+        $returs = Retur::all();
+        $totalReturPerItem = $returs->groupBy('Kode_Item')->map(function ($items) {
             return $items->sum('Jumlah');
         });
 
@@ -41,9 +47,7 @@ class SyncStockOpname extends Command
 
             $stokMasuk  = $items->sum('Jumlah');
             $stokKeluar = $totalPenjualanPerItem->get($kode, 0);
-            $stokSistem  = $stokMasuk - $stokKeluar;
-
-            $totalPembHarga = $items->sum(fn($i) => isset($i->Total_Harga) ? (float) $i->Total_Harga : 0);
+            $stokRetur = $totalReturPerItem->get($kode, 0);
 
             // Ambil sample metadata
             $sample = $items->last() ?? $items->first();
@@ -55,7 +59,7 @@ class SyncStockOpname extends Command
                 'Nama_Item'    => $nama,
                 'Stok_Masuk'   => $stokMasuk,
                 'Stok_Keluar'  => $stokKeluar,
-                'Stok_Sistem'  => $stokSistem,
+                'Stok_Retur'   => $stokRetur,
                 'Stock_Opname' => null,
                 'Keterangan'   => null
             ];
