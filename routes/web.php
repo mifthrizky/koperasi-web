@@ -25,7 +25,8 @@ Route::middleware(['auth'])->group(function () {
 
   Volt::route('data/pengembalian', 'data.pengembalian.index')->name('pengembalian.index');
   Volt::route('data/pengembalian/tambah', 'data.pengembalian.create')->name('pengembalian.create');
-  Volt::route('data/pengembalian/{pengembalian}/edit', 'data.pengembalian.edit')->name('pengembalian.edit');
+  Volt::route('data/pengembalian/{retur}/edit', 'data.pengembalian.edit')->name('retur.edit');
+
 
 
 

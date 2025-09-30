@@ -1,157 +1,158 @@
 <?php
 
 use Livewire\Volt\Component;
-use App\Models\Retur; // Mengubah dari Pengembalian ke Retur
-use Livewire\Attributes\Rule;
+use App\Models\Pembelian;
+use App\Models\Retur;
 
 new class extends Component
 {
-    public Retur $retur; // Mengubah tipe properti
+    public Retur $retur;
 
-    #[Rule('required|numeric')]
-    public string $kode_item = '';
-
-    #[Rule('required|string|max:255')]
-    public string $nama_item = '';
-
-    #[Rule('required|string')]
-    public string $jenis = '';
-
-    #[Rule('required|numeric|min:1')]
+    public string $kodeItem = '';
+    public string $namaItem = '';
     public string $jumlah = '';
-
-    #[Rule('required|string')]
     public string $satuan = '';
-
-    #[Rule('required|numeric|min:0')]
-    public string $total_harga_pengembalian = ''; // Properti untuk Total Harga
-
-    #[Rule('required|string')]
-    public string $alasan = ''; // Properti untuk Alasan Retur
-
-    #[Rule('required|string')]
+    public float $harga = 0;
+    public float $totalHarga = 0;
     public string $bulan = '';
-
-    #[Rule('required|numeric|min:2000|max:2099')]
     public string $tahun = '';
 
-    /**
-     * Mount komponen dan isi properti dengan data yang ada.
-     */
-    public function mount(Retur $retur) // Mengubah tipe argumen
+    // [BARU] Properti untuk jenis dan stok
+    public string $jenis = '';
+    public int $stok = 0;
+
+    public function mount(Retur $retur)
     {
         $this->retur = $retur;
-        $this->kode_item = $retur->Kode_Item;
-        $this->nama_item = $retur->Nama_Item;
-        $this->jenis = $retur->Jenis;
-        $this->jumlah = $retur->Jumlah;
+
+        $this->kodeItem = (string)$retur->Kode_Item;
+        $this->namaItem = $retur->Nama_Item;
+        $this->jumlah = (string)$retur->Jumlah;
         $this->satuan = $retur->Satuan;
-        $this->total_harga_pengembalian = $retur->Total_Harga_Pengembalian;
-        $this->alasan = $retur->Alasan;
+        $this->harga = (float)$retur->Harga;
+        $this->totalHarga = (float)$retur->Total_Harga;
         $this->bulan = $retur->Bulan;
-        $this->tahun = $retur->Tahun;
+        $this->tahun = (string)$retur->Tahun;
+
+        // [BARU] Mengambil data jenis dan stok saat komponen dimuat
+        $this->getDetailItem($this->kodeItem);
     }
 
-    /**
-     * Update data retur.
-     */
+    public function updatedKodeItem($value)
+    {
+        $this->getDetailItem($value);
+    }
+    
+    // [BARU] Fungsi terpisah untuk mengambil detail item
+    private function getDetailItem($kodeItem)
+    {
+        $pembelian = Pembelian::where('Kode_Item', $kodeItem)->first();
+
+        if ($pembelian) {
+            $this->namaItem = $pembelian->Nama_Item;
+            $this->satuan = $pembelian->Satuan;
+            $this->harga = $pembelian->Harga ?? 0;
+            $this->jenis = $pembelian->Jenis ?? 'Tidak ada jenis'; // Ambil data jenis
+            $this->stok = $pembelian->Stok ?? 0; // Ambil data stok
+        } else {
+            $this->namaItem = '';
+            $this->satuan = '';
+            $this->harga = 0;
+            $this->jenis = '';
+            $this->stok = 0;
+        }
+        $this->calculateTotal();
+    }
+
+    public function updatedJumlah()
+    {
+        $this->calculateTotal();
+    }
+
+    private function calculateTotal()
+    {
+        $this->totalHarga = ((float)$this->jumlah) * ((float)$this->harga);
+    }
+
     public function update()
     {
-        $validated = $this->validate();
-
-        // Cek jika Kode_Item unik (kecuali untuk dirinya sendiri)
-        $isUnique = Retur::where('Kode_Item', $this->kode_item) // Menggunakan model Retur
-            ->where('_id', '!=', $this->retur->id)
-            ->doesntExist();
-
-        if (!$isUnique) {
-            $this->addError('kode_item', 'Kode item sudah digunakan oleh data retur lain.');
-            return;
-        }
-
         $this->retur->update([
-            'Kode_Item' => (int) $this->kode_item,
-            'Nama_Item' => $this->nama_item,
-            'Jenis' => $this->jenis,
-            'Jumlah' => (int) $this->jumlah,
-            'Satuan' => strtoupper($this->satuan),
-            'Total_Harga_Pengembalian' => (int) $this->total_harga_pengembalian,
-            'Alasan' => $this->alasan,
-            'Bulan' => strtoupper($this->bulan),
-            'Tahun' => (int) $this->tahun,
+            'Kode_Item' => $this->kodeItem,
+            'Nama_Item' => $this->namaItem,
+            'Jumlah' => $this->jumlah,
+            'Satuan' => $this->satuan,
+            'Harga' => $this->harga,
+            'Total_Harga' => $this->totalHarga,
+            'Bulan' => $this->bulan,
+            'Tahun' => $this->tahun,
+            // 'Jenis' => $this->jenis, // Uncomment baris ini jika Anda juga menyimpan 'Jenis' di tabel Retur
         ]);
 
         session()->flash('success', 'Data retur berhasil diperbarui.');
-        return $this->redirectRoute('pengembalian.index', navigate: true);
+        return redirect()->route('pengembalian.index');
     }
-}; ?>
 
-<div>
-    <h4 class="py-3 mb-4">
-        <span class="text-muted fw-light">Data Retur /</span> Edit Data
-    </h4>
+    // [BARU] Fungsi untuk tombol batal
+    public function cancel()
+    {
+        return redirect()->route('pengembalian.index');
+    }
+};
+?>
 
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Form Edit Data Retur</h5>
+<div class="container mt-4">
+    <h4>Edit Data Retur</h4>
+
+    <form wire:submit.prevent="update">
+        <div class="mb-3">
+            <label for="kodeItem" class="form-label">Kode Item</label>
+            <input type="text" wire:model.live="kodeItem" class="form-control">
         </div>
-        <div class="card-body">
-            <form wire:submit="update">
-                <div class="mb-3">
-                    <label for="kode_item" class="form-label">Kode Item</label>
-                    <input type="number" class="form-control @error('kode_item') is-invalid @enderror" id="kode_item" wire:model="kode_item" placeholder="Contoh: 101">
-                    @error('kode_item') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="nama_item" class="form-label">Nama Item</label>
-                    <input type="text" class="form-control @error('nama_item') is-invalid @enderror" id="nama_item" wire:model="nama_item" placeholder="Contoh: Gula Pasir">
-                    @error('nama_item') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="jenis" class="form-label">Jenis</label>
-                    <input type="text" class="form-control @error('jenis') is-invalid @enderror" id="jenis" wire:model="jenis" placeholder="Contoh: Sembako">
-                    @error('jenis') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="jumlah" class="form-label">Jumlah</label>
-                        <input type="number" class="form-control @error('jumlah') is-invalid @enderror" id="jumlah" wire:model="jumlah" placeholder="Contoh: 50">
-                        @error('jumlah') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                    <div class="col-md-6">
-                        <label for="satuan" class="form-label">Satuan</label>
-                        <input type="text" class="form-control @error('satuan') is-invalid @enderror" id="satuan" wire:model="satuan" placeholder="Contoh: PCS, KG">
-                        @error('satuan') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label for="total_harga_pengembalian" class="form-label">Total Harga Retur (Rp)</label>
-                    <input type="number" class="form-control @error('total_harga_pengembalian') is-invalid @enderror" id="total_harga_pengembalian" wire:model="total_harga_pengembalian" placeholder="Contoh: 750000">
-                    @error('total_harga_pengembalian') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="alasan" class="form-label">Alasan Retur</label>
-                    <textarea class="form-control @error('alasan') is-invalid @enderror" id="alasan" wire:model="alasan" rows="3" placeholder="Contoh: Barang rusak saat diterima"></textarea>
-                    @error('alasan') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="bulan" class="form-label">Bulan</label>
-                    <input type="text" class="form-control @error('bulan') is-invalid @enderror" id="bulan" wire:model="bulan" placeholder="Contoh: JANUARI">
-                    @error('bulan') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="mb-3">
-                    <label for="tahun" class="form-label">Tahun</label>
-                    <input type="number" class="form-control @error('tahun') is-invalid @enderror" id="tahun" wire:model="tahun" placeholder="Contoh: 2025">
-                    @error('tahun') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="d-flex justify-content-end mt-4">
-                    <a href="{{ route('pengembalian.index') }}" class="btn btn-secondary me-2" wire:navigate>Batal</a>
-                    <button type="submit" class="btn btn-primary">
-                        <span wire:loading.remove>Update</span>
-                        <span wire:loading>Memperbarui...</span>
-                    </button>
-                </div>
-            </form>
+
+        <div class="mb-3">
+            <label for="namaItem" class="form-label">Nama Item</label>
+            <input type="text" wire:model="namaItem" class="form-control" readonly>
         </div>
-    </div>
+
+        <div class="mb-3">
+            <label for="jenis" class="form-label">Jenis Item</label>
+            <input type="text" wire:model="jenis" class="form-control" readonly>
+        </div>
+        
+        <div class="mb-3">
+            <label for="stok" class="form-label">Stok Saat Ini</label>
+            <input type="text" wire:model="stok" class="form-control" readonly>
+        </div>
+
+        <div class="mb-3">
+            <label for="satuan" class="form-label">Satuan</label>
+            <input type="text" wire:model="satuan" class="form-control" readonly>
+        </div>
+
+        <div class="mb-3">
+            <label for="jumlah" class="form-label">Jumlah</label>
+            <input type="number" wire:model.live="jumlah" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label for="totalHarga" class="form-label">Total Harga</label>
+            <input type="text" wire:model="totalHarga" class="form-control" readonly>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label for="bulan" class="form-label">Bulan</label>
+                <input type="text" wire:model="bulan" class="form-control">
+            </div>
+            <div class="col">
+                <label for="tahun" class="form-label">Tahun</label>
+                <input type="text" wire:model="tahun" class="form-control">
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-success">Update</button>
+            <button type="button" wire:click="cancel" class="btn btn-secondary">Batal</button>
+        </div>
+    </form>
 </div>

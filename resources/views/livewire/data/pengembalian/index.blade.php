@@ -1,7 +1,7 @@
 <?php
 
 use Livewire\Volt\Component;
-use App\Models\Retur; // Mengubah dari Pengembalian ke Retur
+use App\Models\Retur; // Menggunakan model Retur
 use Livewire\WithPagination;
 use Illuminate\Pagination\Paginator;
 use Livewire\Attributes\Computed;
@@ -16,7 +16,7 @@ new class extends Component
     public string $sortBy = 'created_at';
     public string $sortDirection = 'desc';
     public string $selectedMonth = '';
-    public ?string $returIdToDelete = null; // Mengubah nama properti
+    public ?string $returIdToDelete = null; // Nama variabel disesuaikan
 
     /**
      * Menampilkan konfirmasi sebelum menghapus.
@@ -37,11 +37,10 @@ new class extends Component
             return;
         }
 
-        // Menggunakan model Retur
-        Retur::find($this->returIdToDelete)?->delete();
+        Retur::find($this->returIdToDelete)?->delete(); // Menggunakan model Retur
         $this->returIdToDelete = null;
 
-        session()->flash('success', 'Data retur berhasil dihapus.'); // Mengubah pesan sukses
+        session()->flash('success', 'Data berhasil dihapus.');
     }
 
     /**
@@ -50,9 +49,8 @@ new class extends Component
     #[Computed]
     public function months()
     {
-        // Mengubah nama koleksi ke 'returs'
         $bulanDariDB = DB::getMongoDB()
-            ->selectCollection('returs')
+            ->selectCollection('returs') // Nama koleksi disesuaikan
             ->distinct('Bulan');
 
         $bulanDariDB = array_map(fn($b) => strtoupper(trim($b)), $bulanDariDB);
@@ -112,8 +110,7 @@ new class extends Component
      */
     public function with(): array
     {
-        // Mengubah query ke model Retur
-        $returs = Retur::query()
+        $returs = Retur::query() // Menggunakan model Retur
             ->when($this->selectedMonth, function ($query) {
                 $query->where('Bulan', $this->selectedMonth);
             })
@@ -129,7 +126,7 @@ new class extends Component
             ->paginate(10);
 
         return [
-            'returs' => $returs, // Mengubah nama variabel
+            'returs' => $returs, // Nama variabel diubah
             'months' => $this->months(),
         ];
     }
@@ -146,14 +143,14 @@ new class extends Component
 
     {{-- Judul Halaman --}}
     <h4 class="py-3 mb-4">
-        <span class="text-muted fw-light">Data Koperasi /</span> Data Retur
+        <span class="text-muted fw-light">Data Koperasi /</span> Data Pengembalian
     </h4>
 
     <div class="card">
         <div class="card-header">
             {{-- Header Card: Judul dan Tombol Tambah --}}
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Tabel Data Retur</h5>
+                <h5 class="mb-0">Tabel Data Pengembalian</h5>
                 <a href="{{ route('pengembalian.create') }}" class="btn btn-primary" wire:navigate>
                     <i class="bx bx-plus-circle me-1"></i> Tambah Data
                 </a>
@@ -188,36 +185,31 @@ new class extends Component
                     <tr>
                         <th>Kode Item</th>
                         <th>Nama Item</th>
-                        <th>Jenis</th>
                         <th>Jumlah</th>
-                        <th wire:click="sort('Total_Harga_Pengembalian')" style="cursor: pointer;">
-                            Total Harga Retur
-                            <i class="bx bx-sort-alt-2 text-muted"></i>
-                        </th>
-                        <th>Alasan</th>
+                        <th>Harga Satuan</th>
+                        <th>Total Harga</th>
                         <th>Bulan</th>
+                        <th>Tahun</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="table-border-bottom-0">
-                    @forelse ($returs as $retur) {{-- Mengubah nama variabel --}}
+                    @forelse ($returs as $retur) {{-- Nama variabel diubah --}}
                     <tr wire:key="{{ $retur->id }}">
                         <td><strong>{{ $retur->Kode_Item }}</strong></td>
                         <td>{{ $retur->Nama_Item }}</td>
-                        <td><span class="badge bg-label-primary me-1">{{ $retur->Jenis }}</span></td>
                         <td>{{ $retur->Jumlah }} {{ $retur->Satuan }}</td>
-                        {{-- Mengubah kolom Total Harga --}}
-                        <td>Rp {{ number_format($retur->Total_Harga_Pengembalian, 0, ',', '.') }}</td>
-                        {{-- Menambahkan kolom Alasan --}}
-                        <td>{{ $retur->Alasan }}</td>
+                        <td>Rp {{ number_format($retur->Harga, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($retur->Total_Harga, 0, ',', '.') }}</td>
                         <td>{{ $retur->Bulan }}</td>
+                        <td>{{ $retur->Tahun }}</td>
                         <td>
                             <div class="dropdown">
                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                     <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="{{ route('pengembalian.edit', $retur) }}" wire:navigate> {{-- Mengubah rute edit --}}
+                                    <a class="dropdown-item" href="{{ route('retur.edit', $retur) }}" wire:navigate>
                                         <i class="bx bx-edit-alt me-1"></i> Edit
                                     </a>
                                     <a class="dropdown-item" href="javascript:void(0);" wire:click="confirmDelete('{{ $retur->id }}')">
@@ -230,7 +222,7 @@ new class extends Component
                     @empty
                     <tr>
                         <td colspan="8" class="text-center py-3">
-                            Tidak ada data retur ditemukan.
+                            Tidak ada data ditemukan.
                         </td>
                     </tr>
                     @endforelse
@@ -254,7 +246,7 @@ new class extends Component
         Livewire.on('show-delete-confirmation', () => {
             Swal.fire({
                 title: 'Anda yakin?',
-                text: "Data retur yang dihapus tidak dapat dikembalikan!",
+                text: "Data yang dihapus tidak dapat dikembalikan!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
