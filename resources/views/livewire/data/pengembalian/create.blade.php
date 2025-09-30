@@ -23,11 +23,6 @@ new class extends Component
 
     public string $satuan = ''; // otomatis dari pembelian
 
-    public string $harga_satuan = ''; // untuk perhitungan harga
-
-    #[Rule('required|numeric|min:0')]
-    public string $total_harga_pengembalian = '';
-
     #[Rule('required|string')]
     public string $bulan = '';
 
@@ -36,7 +31,7 @@ new class extends Component
 
     public function updatedKodeItem($value)
     {
-        $this->reset(['stok_tersedia','nama_item','jenis','satuan','harga_satuan','total_harga_pengembalian']);
+        $this->reset(['stok_tersedia','nama_item','jenis','satuan']);
 
         if (!empty($value)) {
             $pembelian = Pembelian::where('Kode_Item', (int)$value)
@@ -48,17 +43,7 @@ new class extends Component
                 $this->nama_item = $pembelian->Nama_Item;
                 $this->jenis = $pembelian->Jenis;
                 $this->satuan = $pembelian->Satuan; // ambil otomatis
-                $this->harga_satuan = $pembelian->Total_Harga / max(1, $pembelian->Jumlah); // hitung harga per unit
             }
-        }
-    }
-
-    public function updatedJumlah($value)
-    {
-        if (!empty($value) && is_numeric($value) && $this->harga_satuan) {
-            $this->total_harga_pengembalian = (string) ((int)$value * (int)$this->harga_satuan);
-        } else {
-            $this->total_harga_pengembalian = '';
         }
     }
 
@@ -77,7 +62,6 @@ new class extends Component
             'Jenis' => $this->jenis,
             'Jumlah' => (int) $this->jumlah,
             'Satuan' => strtoupper($this->satuan),
-            'Total_Harga_Pengembalian' => (int) $this->total_harga_pengembalian,
             'Bulan' => strtoupper($this->bulan),
             'Tahun' => (int) $this->tahun,
         ]);
@@ -132,10 +116,6 @@ new class extends Component
                         <label for="satuan" class="form-label">Satuan</label>
                         <input type="text" class="form-control" id="satuan" wire:model="satuan" readonly>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label for="total_harga_pengembalian" class="form-label">Total Harga Retur (Rp)</label>
-                    <input type="number" class="form-control" id="total_harga_pengembalian" wire:model="total_harga_pengembalian" readonly>
                 </div>
                 <div class="mb-3">
                     <label for="bulan" class="form-label">Bulan</label>

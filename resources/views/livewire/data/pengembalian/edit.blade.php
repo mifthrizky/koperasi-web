@@ -13,8 +13,6 @@ new class extends Component
     public string $namaItem = '';
     public string $jumlah = '';
     public string $satuan = '';
-    public float $harga = 0; // Harga satuan
-    public float $totalHarga = 0;
     public string $bulan = '';
     public string $tahun = '';
     public ?string $jenis = ''; // Nullable untuk mencegah error
@@ -42,12 +40,8 @@ new class extends Component
             $this->jenis = $pembelian->Jenis;
             $this->satuan = $pembelian->Satuan;
             $this->stok = $pembelian->Jumlah; // Stok adalah jumlah dari pembelian
-            // Hitung harga satuan
-            $this->harga = $pembelian->Total_Harga / max(1, $pembelian->Jumlah);
         }
         
-        // 3. Hitung total harga awal
-        $this->calculateTotal();
     }
     
     /**
@@ -55,7 +49,7 @@ new class extends Component
      */
     public function searchItem()
     {
-        $this->reset(['namaItem', 'jenis', 'satuan', 'stok', 'harga', 'totalHarga']);
+        $this->reset(['namaItem', 'jenis', 'satuan', 'stok']);
         
         if (!empty($this->kodeItem)) {
             $pembelian = Pembelian::where('Kode_Item', (int)$this->kodeItem)->latest('created_at')->first();
@@ -65,7 +59,6 @@ new class extends Component
                 $this->jenis = $pembelian->Jenis;
                 $this->satuan = $pembelian->Satuan;
                 $this->stok = $pembelian->Jumlah;
-                $this->harga = $pembelian->Total_Harga / max(1, $pembelian->Jumlah);
             }
         }
     }
@@ -73,15 +66,7 @@ new class extends Component
     /**
      * Menghitung ulang total harga saat jumlah diubah.
      */
-    public function updatedJumlah()
-    {
-        $this->calculateTotal();
-    }
 
-    private function calculateTotal()
-    {
-        $this->totalHarga = ((float)$this->jumlah) * ((float)$this->harga);
-    }
     
     /**
      * Menyimpan perubahan data ke database.
@@ -99,8 +84,6 @@ new class extends Component
             'Jenis' => $this->jenis,
             'Jumlah' => (int)$this->jumlah,
             'Satuan' => $this->satuan,
-            'Harga' => $this->harga, // Menyimpan harga satuan
-            'Total_Harga' => $this->totalHarga,
             'Bulan' => strtoupper($this->bulan),
             'Tahun' => (int)$this->tahun,
         ]);
@@ -160,10 +143,6 @@ new class extends Component
                         <label for="satuan" class="form-label">Satuan</label>
                         <input type="text" class="form-control" id="satuan" wire:model="satuan" readonly>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label for="totalHarga" class="form-label">Total Harga Retur (Rp)</label>
-                    <input type="text" class="form-control" id="totalHarga" wire:model="totalHarga" readonly>
                 </div>
                 <div class="mb-3">
                     <label for="bulan" class="form-label">Bulan</label>

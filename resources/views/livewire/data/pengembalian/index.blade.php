@@ -186,8 +186,8 @@ new class extends Component
                         <th>Kode Item</th>
                         <th>Nama Item</th>
                         <th>Jumlah</th>
-                        <th>Harga Satuan</th>
-                        <th>Total Harga</th>
+                        <th>tanggal diretur</th>
+                        <th>tgl update retur</th>
                         <th>Bulan</th>
                         <th>Tahun</th>
                         <th>Aksi</th>
@@ -199,8 +199,8 @@ new class extends Component
                         <td><strong>{{ $retur->Kode_Item }}</strong></td>
                         <td>{{ $retur->Nama_Item }}</td>
                         <td>{{ $retur->Jumlah }} {{ $retur->Satuan }}</td>
-                        <td>Rp {{ number_format($retur->Harga, 0, ',', '.') }}</td>
-                        <td>Rp {{ number_format($retur->Total_Harga, 0, ',', '.') }}</td>
+                        <td>{{ $retur->created_at->format('d-m-Y H:i') }}</td>
+                        <td>{{ $retur->updated_at->format('d-m-Y H:i') }}</td>
                         <td>{{ $retur->Bulan }}</td>
                         <td>{{ $retur->Tahun }}</td>
                         <td>
