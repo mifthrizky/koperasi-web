@@ -20,7 +20,7 @@ class Retur extends Model
         'No',
         'Kode_Item',
         'Nama_Item',
-        'Jumlah', // Tetap gunakan 'Jumlah' agar konsisten
+        'Jumlah',
         'Satuan',
         'Harga',
         'Pot._%', // Nama kolom dengan spasi dan karakter khusus
@@ -28,4 +28,9 @@ class Retur extends Model
         'Bulan',
         'Tahun',
     ];
+
+    public function pembelian()
+    {
+        return $this->belongsTo(Pembelian::class, 'Kode_Item', 'Kode_Item');
+    }
 }

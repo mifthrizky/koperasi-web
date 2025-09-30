@@ -26,4 +26,16 @@ class Pembelian extends Model
         'Bulan',
         'Tahun',
     ];
+
+    // Relasi ke Penjualan
+    public function penjualans()
+    {
+        return $this->hasMany(Penjualan::class, 'Kode_Item', 'Kode_Item');
+    }
+
+    // Relasi ke Retur
+    public function returs()
+    {
+        return $this->hasMany(Retur::class, 'Kode_Item', 'Kode_Item');
+    }
 }

@@ -4,31 +4,25 @@ namespace App\Models;
 
 use MongoDB\Laravel\Eloquent\Model;
 
-class Penjualan extends Model
+class Barang extends Model
 {
     protected $connection = 'mongodb';
-
     protected $guarded = ['_id'];
+    protected $collection = 'barangs';
 
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
+
     protected $fillable = [
         'Kode_Item',
         'Nama_Item',
         'Jenis',
-        'Jumlah',
         'Satuan',
-        'Total_Harga',
+        'Harga_Satuan',
         'Bulan',
         'Tahun',
     ];
-
-    // Relasi ke Pembelian
-    public function pembelian()
-    {
-        return $this->belongsTo(Pembelian::class, 'Kode_Item', 'Kode_Item');
-    }
 }

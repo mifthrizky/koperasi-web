@@ -19,6 +19,10 @@ Route::middleware(['auth'])->group(function () {
 
   // === ROUTE SIDEBAR ===
   // Route pembelian
+  Volt::route('data/barang', 'data.barang.index')->name('barang.index');
+  Volt::route('data/barang/tambah', 'data.barang.create')->name('barang.create');
+  Volt::route('data/barang/{barang}/edit', 'data.barang.edit')->name('barang.edit');
+
   Volt::route('data/pembelian', 'data.pembelian.index')->name('pembelian.index');
   Volt::route('data/pembelian/tambah', 'data.pembelian.create')->name('pembelian.create');
   Volt::route('data/pembelian/{pembelian}/edit', 'data.pembelian.edit')->name('pembelian.edit');

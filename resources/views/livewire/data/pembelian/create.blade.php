@@ -27,6 +27,9 @@ new class extends Component
     #[Rule('required|string')]
     public string $bulan = '';
 
+    #[Rule('required|numeric|min:2000|max:2099')]
+    public string $tahun = '';
+
     /**
      * Simpan data pembelian baru.
      */
@@ -44,6 +47,7 @@ new class extends Component
             'Satuan' => Strtoupper($this->satuan),
             'Total_Harga' => (int) $this->total_harga,
             'Bulan' => strtoupper($this->bulan),
+            'Tahun' => (int) $this->tahun,
         ]);
 
         // Kirim pesan sukses dan redirect
@@ -99,6 +103,12 @@ new class extends Component
                     <label for="bulan" class="form-label">Bulan</label>
                     <input type="text" class="form-control @error('bulan') is-invalid @enderror" id="bulan" wire:model="bulan" placeholder="Contoh: JANUARI">
                     @error('bulan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="tahun" class="form-label">Tahun</label>
+                    <input type="number" class="form-control @error('tahun') is-invalid @enderror" id="tahun" wire:model="tahun" placeholder="Contoh: 2025">
+                    @error('tahun') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">
