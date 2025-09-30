@@ -26,4 +26,10 @@ class Pembelian extends Model
         'Bulan',
         'Tahun',
     ];
+
+    // Relasi ke Pembelian
+    public function barang()
+    {
+        return $this->belongsTo(Barang::class, 'Kode_Item', 'Kode_Item');
+    }
 }

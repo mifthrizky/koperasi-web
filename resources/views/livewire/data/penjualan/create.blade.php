@@ -1,13 +1,13 @@
 <?php
 
 use Livewire\Volt\Component;
-use App\Models\Pembelian;
+use App\Models\Penjualan;
 use App\Models\Barang;
 use Livewire\Attributes\Rule;
 
 new class extends Component
 {
-    #[Rule('required|numeric|unique:pembelians,Kode_Item')]
+    #[Rule('required|numeric|unique:penjualans,Kode_Item')]
     public string $kode_item = '';
 
     #[Rule('nullable|string|max:255')]
@@ -59,13 +59,13 @@ new class extends Component
     }
 
     /**
-     * Simpan data pembelian baru
+     * Simpan data penjualan baru
      */
     public function save()
     {
         $validated = $this->validate();
 
-        Pembelian::create([
+        Penjualan::create([
             'Kode_Item'   => (int) $this->kode_item,
             'Nama_Item'   => $this->nama_item,
             'Jenis'       => $this->jenis,
@@ -76,20 +76,20 @@ new class extends Component
             'Tahun'       => (int) $this->tahun,
         ]);
 
-        session()->flash('success', 'Data pembelian berhasil ditambahkan.');
-        return $this->redirectRoute('pembelian.index', navigate: true);
+        session()->flash('success', 'Data penjualan berhasil ditambahkan.');
+        return $this->redirectRoute('penjualan.index', navigate: true);
     }
 };
 ?>
 
 <div>
     <h4 class="py-3 mb-4">
-        <span class="text-muted fw-light">Data Pembelian /</span> Tambah Data
+        <span class="text-muted fw-light">Data Penjualan /</span> Tambah Data
     </h4>
 
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Form Tambah Data Pembelian</h5>
+            <h5 class="mb-0">Form Tambah Data Penjualan</h5>
         </div>
         <div class="card-body">
 
@@ -177,7 +177,7 @@ new class extends Component
 
                 <!-- Tombol Simpan -->
                 <div class="d-flex justify-content-end mt-4">
-                    <a href="{{ route('pembelian.index') }}" class="btn btn-secondary me-2" wire:navigate>Batal</a>
+                    <a href="{{ route('penjualan.index') }}" class="btn btn-secondary me-2" wire:navigate>Batal</a>
                     <button type="submit" class="btn btn-primary"
                         wire:target="save"
                         wire:loading.attr="disabled">

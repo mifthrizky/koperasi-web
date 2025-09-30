@@ -16,6 +16,19 @@
 
     {{-- Menu Header untuk Data Koperasi --}}
     <li class="menu-header small text-uppercase">
+      <span class="menu-header-text">Data Barang</span>
+    </li>
+
+    <li class="menu-item {{ request()->routeIs('data.pembelian') ? 'active' : '' }}">
+      <a class="menu-link" href="{{ route('barang.index') }}" wire:navigate>
+        <i class="menu-icon tf-icons bx bx-box"></i>
+        <div class="text-truncate">Barang</div>
+      </a>
+    </li>
+
+
+    {{-- Menu Header untuk Data Koperasi --}}
+    <li class="menu-header small text-uppercase">
       <span class="menu-header-text">Data Koperasi</span>
     </li>
 
