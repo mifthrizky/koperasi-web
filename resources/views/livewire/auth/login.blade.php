@@ -69,7 +69,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
      */
     protected function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->email).'|'.request()->ip());
+        return Str::transliterate(Str::lower($this->email) . '|' . request()->ip());
     }
 };
 ?>
@@ -77,7 +77,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
 @section('page-style')
 @vite([
-    'resources/assets/vendor/scss/pages/page-auth.scss'
+'resources/assets/vendor/scss/pages/page-auth.scss'
 ])
 @endsection
 
@@ -86,9 +86,9 @@ new #[Layout('components.layouts.auth')] class extends Component {
 
     <!-- Session Status -->
     @if (session('status'))
-        <div class="alert alert-info mb-4">
-            {{ session('status') }}
-        </div>
+    <div class="alert alert-info mb-4">
+        {{ session('status') }}
+    </div>
     @endif
 
     <form wire:submit="login" class="mb-6">
@@ -102,10 +102,9 @@ new #[Layout('components.layouts.auth')] class extends Component {
                 required
                 autofocus
                 autocomplete="email"
-                placeholder="{{ __('Enter your email') }}"
-            >
+                placeholder="{{ __('Enter your email') }}">
             @error('email')
-                <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
 
@@ -113,9 +112,9 @@ new #[Layout('components.layouts.auth')] class extends Component {
             <div class="d-flex justify-content-between">
                 <label for="password" class="form-label">{{ __('Password') }}</label>
                 @if (Route::has('password.request'))
-                    <a href="{{ route('password.request') }}" wire:navigate>
-                        <span>{{ __('Forgot Password?') }}</span>
-                    </a>
+                <a href="{{ route('password.request') }}" wire:navigate>
+                    <span>{{ __('Forgot Password?') }}</span>
+                </a>
                 @endif
             </div>
             <div class="input-group input-group-merge">
@@ -126,11 +125,10 @@ new #[Layout('components.layouts.auth')] class extends Component {
                     id="password"
                     required
                     autocomplete="current-password"
-                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                >
+                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;">
                 <span class="input-group-text cursor-pointer"><i class="bx bx-hide"></i></span>
                 @error('password')
-                    <div class="invalid-feedback">{{ $message }}</div>
+                <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
         </div>
@@ -152,11 +150,11 @@ new #[Layout('components.layouts.auth')] class extends Component {
     </form>
 
     @if (Route::has('register'))
-        <p class="text-center">
-            <span>{{ __('New on our platform?') }}</span>
-            <a href="{{ route('register') }}" wire:navigate>
-                <span>{{ __('Create an account') }}</span>
-            </a>
-        </p>
+    <p class="text-center">
+        <span>{{ __('New on our platform?') }}</span>
+        <a href="{{ route('register') }}" wire:navigate>
+            <span>{{ __('Create an account') }}</span>
+        </a>
+    </p>
     @endif
 </div>
