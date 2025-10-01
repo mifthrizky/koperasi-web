@@ -31,10 +31,8 @@ class ImportReturData extends Command
         $this->info('Memulai proses impor data retur...');
 
         try {
-            // Hapus data lama agar tidak duplikat
             Retur::truncate();
 
-            // Arahkan ke file retur_2025.json
             $filePath = storage_path('app/data/retur_2025.json');
 
             if (!File::exists($filePath)) {

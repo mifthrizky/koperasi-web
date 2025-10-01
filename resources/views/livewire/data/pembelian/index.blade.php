@@ -108,6 +108,7 @@ new class extends Component
     }
 }; ?>
 
+@section('title', 'Pembelian')
 <div>
     {{-- Notifikasi --}}
     @if (session('success'))

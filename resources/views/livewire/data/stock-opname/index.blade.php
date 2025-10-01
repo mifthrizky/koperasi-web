@@ -154,6 +154,7 @@ new class extends Component
     }
 }; ?>
 
+@section('title', 'Stock Opname')
 <div>
     {{-- Notifikasi --}}
     @if (session('success'))

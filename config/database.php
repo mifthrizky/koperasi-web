@@ -39,7 +39,7 @@ return [
             'username' => env('DB_USERNAME', 'homestead'),
             'password' => env('DB_PASSWORD', 'secret'),
             // 'options'  => [
-            //     'database' => 'admin' // Ganti ke database otentikasi jika perlu
+            //     'database' => 'admin'
             // ]
         ],
 

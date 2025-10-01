@@ -3,13 +3,12 @@
 
 
 @props([
-    'pageTitle',
+'pageTitle',
 ])
 
 
 <title>@yield('title') |
-  {{ config('variables.templateName') ? config('variables.templateName') : 'TemplateName' }} -
-  {{ config('variables.templateSuffix') ? config('variables.templateSuffix') : 'TemplateSuffix' }}
+  {{ config('variables.templateName') ? config('variables.templateName') : 'TemplateName' }}
 </title>
 
 <meta name="description" content="{{ config('variables.templateDescription') ? config('variables.templateDescription') : '' }}" />
@@ -25,7 +24,7 @@
 <meta property="og:site_name" content="{{ config('variables.creatorName') ? config('variables.creatorName') : '' }}" />
 <link rel="canonical" href="{{ config('variables.productPage') ? config('variables.productPage') : '' }}">
 <!-- Favicon -->
-<link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+<link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/kopeg.ico') }}" />
 
 
 <!-- Include Styles -->

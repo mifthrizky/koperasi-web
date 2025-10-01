@@ -72,6 +72,7 @@ new class extends Component
 };
 ?>
 
+@section('title', 'Pembelian')
 <div>
     {{-- Kode View tidak perlu diubah --}}
     <h4 class="py-3 mb-4">

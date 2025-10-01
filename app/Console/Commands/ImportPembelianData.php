@@ -14,7 +14,7 @@ class ImportPembelianData extends Command
      *
      * @var string
      */
-    protected $signature = 'import:pembelian'; // Nama perintah kita
+    protected $signature = 'import:pembelian'; // Nama perintah
 
     /**
      * The console command description.

@@ -3,7 +3,7 @@
 return [
   "creatorName" => "ThemeSelection",
   "creatorUrl" => "https://themeselection.com",
-  "templateName" => "Sneat",
+  "templateName" => "Koperasi Pegawai",
   "templateSuffix" => "Laravel Bootstrap Starter Kit",
   "templateVersion" => "1.0.0",
   "templateFree" => true,

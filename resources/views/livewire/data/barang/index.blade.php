@@ -78,6 +78,7 @@ new class extends Component
     }
 }; ?>
 
+@section('title', 'Barang')
 <div>
     {{-- Notifikasi Sukses --}}
     @if (session('success'))

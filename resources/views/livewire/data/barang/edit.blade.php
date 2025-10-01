@@ -54,7 +54,7 @@ new class extends Component
     }
 }; ?>
 
-
+@section('title', 'Barang')
 <div>
     <h4 class="py-3 mb-4">
         <span class="text-muted fw-light">Data Barang /</span> Edit Data

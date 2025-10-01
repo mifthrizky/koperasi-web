@@ -91,6 +91,7 @@ new class extends Component
 };
 ?>
 
+@section('title', 'Penjualan')
 <div>
     {{-- Notifikasi Tambahan untuk Error --}}
     @if (session('error'))

@@ -115,6 +115,7 @@ new class extends Component
     }
 }; ?>
 
+@section('title', 'Penjualan')
 <div>
     {{-- Notifikasi --}}
     @if (session('success'))

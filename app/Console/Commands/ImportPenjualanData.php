@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Penjualan; // <-- Ganti ke model Penjualan
+use App\Models\Penjualan;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -14,14 +14,14 @@ class ImportPenjualanData extends Command
      *
      * @var string
      */
-    protected $signature = 'import:penjualan'; // <-- Ganti nama signature
+    protected $signature = 'import:penjualan';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Import data penjualan dari file JSON ke MongoDB'; // <-- Ganti deskripsi
+    protected $description = 'Import data penjualan dari file JSON ke MongoDB';
 
     /**
      * Execute the console command.

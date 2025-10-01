@@ -102,6 +102,7 @@ new class extends Component
 };
 ?>
 
+@section('title', 'Pengembalian')
 <div>
     {{-- Tampilan Blade tidak ada perubahan, hanya logic di atas --}}
     <h4 class="py-3 mb-4">

@@ -80,6 +80,7 @@ new class extends Component
 };
 ?>
 
+@section('title', 'Pembelian')
 <div>
     {{-- Tampilan Blade tidak berubah dari sebelumnya --}}
     @if (session('success'))
