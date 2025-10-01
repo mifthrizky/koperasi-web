@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Koperasi Mahasiswa Polman Bandung</title>
+    <title>Koperasi Pegawai Polman Bandung</title>
     
     @include('partials.head')
 
@@ -176,13 +176,17 @@
     </div>
 
     <div class="main-content">
-        <div class="glass-card">
-            <h1>Koperasi Mahasiswa Polman Bandung</h1>
-            <p>
-              Selamat datang di sistem informasi Koperasi Mahasiswa Polman Bandung.
-              Daftar dan login untuk mengakses layanan koperasi secara digital dengan mudah.
-            </p>
-        </div>
+<div class="glass-card">
+        
+        <img src="{{ asset('assets/img/koprasi.png') }}" 
+             alt="Logo Koperasi Polman"
+             style="display: block; margin: 0 auto 1.5rem auto; max-width: 120px;"> 
+             <h1>Koperasi Pegawai Polman Bandung</h1>
+        <p>
+            Selamat datang di sistem informasi Koperasi Mahasiswa Polman Bandung. 
+            Daftar dan login untuk mengakses layanan koperasi secara digital dengan mudah.
+        </p>
+    </div>
 
         <div class="content-image">
             </div>

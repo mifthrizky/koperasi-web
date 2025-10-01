@@ -19,6 +19,43 @@
         background-color: #fff; /* Latar belakang putih jika gradien tidak menutupi */
       }
 
+      .form-label {
+        color: #ffffffff; // Warna label hitam/abu-abu gelap
+        font-weight: 600; // Sedikit tebal
+        margin-bottom: 0.5rem; // Spasi antara label dan input
+      }
+
+      .btn-primary {
+        background-color: #ab31fdff !important; // Ungu
+        border-color: #000000ff !important; // Border ungu
+        color: #FFFFFF !important; // Teks putih
+        font-weight: 600; // Tebal
+        padding: 0.75rem 1.5rem; // Padding
+        border-radius: 0.5rem; // Rounded corner
+        font-size: 1.1rem; // Ukuran font
+        transition: all 0.2s ease-in-out; // Transisi hover
+  
+        &:hover {
+        background-color: #6A1EB8 !important; // Ungu lebih gelap saat hover
+        border-color: #6A1EB8 !important;
+        }
+        &:focus {
+        box-shadow: 0 0 0 0.25rem rgba(138, 43, 226, 0.4) !important;
+        }
+      }
+      .text-uwoyy {
+        color: #ffffffff; // Warna teks abu-abu
+        margin-top: 1.5rem; // Spasi atas
+  
+        a {
+        color: #ff004cff !important; // Warna link "Sign in instead" ungu
+        font-weight: 600;
+        &:hover {
+        text-decoration: underline;
+          } 
+        }
+      }
+
       /* --- BACKGROUND GRADIENT DENGAN CLIP-PATH --- */
       .background-gradient {
         position: fixed;
@@ -29,7 +66,7 @@
         z-index: -1;
         
         /* WARNA GRADASI BIRU */
-        background: #8e2de2;
+        background: #b3b3b3ff;
         background: -webkit-linear-gradient(to bottom right, #ac00e0ff, #00d4ff);
         background: linear-gradient(to bottom right, #9900e0ff, #00d4ff);
 
@@ -50,7 +87,7 @@
 
       /* --- KARTU KACA (Untuk menampung form) --- */
       .glass-card {
-        background: rgba(255, 255, 255, 0.15);
+        background: rgba(133, 106, 255, 1);
         border-radius: 20px;
         padding: 40px;
         max-width: 450px; /* Sedikit lebih lebar untuk form */
@@ -66,14 +103,14 @@
       .glass-card .form-label,
       .glass-card .form-check-label,
       .glass-card .text-center {
-        color: #f0f0f0 !important;
+        color: #ffffffff !important;
       }
       .glass-card .text-center a span {
-        color: #fff !important;
+        color: #ffffffff !important;
         font-weight: bold;
       }
       .glass-card h4 {
-        color: #fff !important;
+        color: #ffffffff !important;
       }
       .glass-card p {
         color: #e0e0e0 !important;

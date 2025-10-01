@@ -82,7 +82,10 @@ new #[Layout('components.layouts.auth')] class extends Component {
 @endsection
 
 <div>
-    <x-auth-header :title="__('Welcome to :app!', ['app' => config('app.name')])" :description="__('Enter your email and password below to log in')" />
+    <img src="{{ asset('assets/img/koprasi.png') }}" 
+    alt="Koprasi" 
+    style="display: block; margin: 0 auto 1.5rem auto; max-width: 180px;">
+    <x-auth-header :title="__('welcome')" :description="__('Enter your email and password below to log in')" />
 
     <!-- Session Status -->
     @if (session('status'))

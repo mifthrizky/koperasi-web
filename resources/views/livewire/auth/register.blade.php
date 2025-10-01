@@ -46,6 +46,9 @@ new #[Layout('components.layouts.auth')] class extends Component {
 @endsection
 
 <div>
+    <img src="{{ asset('assets/img/koprasi.png') }}" 
+    alt="Koprasi" 
+    style="display: block; margin: 0 auto 1.5rem auto; max-width: 180px;">
     <h4 class="mb-1">{{ __('POLMAN DJAJA DJAJA') }} 🚀</h4>
     <p class="mb-6">{{ __('Make your koperasi management easy and fun!') }}</p>
 
@@ -146,7 +149,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
         </button>
     </form>
 
-    <p class="text-center">
+    <p class="text-uwoyy">
         <span>{{ __('Already have an account?') }}</span>
         <a href="{{ route('login') }}" wire:navigate>
             <span>{{ __('Sign in instead') }}</span>

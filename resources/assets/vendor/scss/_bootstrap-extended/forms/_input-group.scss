@@ -200,7 +200,7 @@
     .form-select {
       border-color: var(--#{$prefix}input-group-disabled-border-color);
       background-color: $input-disabled-bg;
-      color: var(--#{$prefix}secondary-color);
+      color: #fff;
       pointer-events: none;
     }
     .form-select {
