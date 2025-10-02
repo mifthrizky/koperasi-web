@@ -8,7 +8,7 @@
 
   <ul class="menu-inner py-5">
     <li class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-      <a class="menu-link" href="{{ route('dashboard') }}" wire:navigate>
+      <a class="menu-link" href="{{ route('dashboard') }}?refresh={{ time() }}" wire:navigate>
         <i class="menu-icon tf-icons bx bx-home-circle"></i>
         <div class="text-truncate">{{ __('Dashboard') }}</div>
       </a>
