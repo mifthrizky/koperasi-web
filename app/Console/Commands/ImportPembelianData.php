@@ -43,7 +43,7 @@ class ImportPembelianData extends Command
 
             $jsonContent = File::get($filePath);
 
-            // File Anda adalah format JSONL (JSON per baris), jadi kita proses per baris
+            // File format JSONL (JSON per baris), jadi kita proses per baris
             $lines = explode("\n", $jsonContent);
 
             $progressBar = $this->output->createProgressBar(count($lines));

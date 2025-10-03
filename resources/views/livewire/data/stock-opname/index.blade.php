@@ -4,7 +4,6 @@ use Livewire\Volt\Component;
 use App\Models\StockOpname;
 use Livewire\WithPagination;
 use Illuminate\Pagination\Paginator;
-use Livewire\Attributes\Rule;
 
 new class extends Component
 {
@@ -15,17 +14,11 @@ new class extends Component
     public string $sortDirection = 'asc';
     public bool $isSoActive = false;
 
-    #[Rule('array')]
-    public array $soData = [];
-
-    #[Rule('nullable|integer|min:0', as: 'Stok Fisik', onUpdate: false)]
-    public $stokFisikValue;
-
-    #[Rule('nullable|string', as: 'Keterangan', onUpdate: false)]
-    public $keteranganValue;
+    public array $stokFisik = [];
+    public array $keterangan = [];
 
     public array $keteranganOptions = [
-        'Kesalahan Catat',
+        'Salah Catat',
         'Hilang',
         'Rusak',
         'Lain-lain',
@@ -36,71 +29,118 @@ new class extends Component
         Paginator::useBootstrap();
     }
 
-    public function mount()
+    private function getStockOpnameQuery()
     {
-        $this->loadSoData();
-    }
-
-    private function loadSoData()
-    {
-        $items = StockOpname::select('id', 'Stock_Opname', 'Keterangan')->get();
-        foreach ($items as $item) {
-            $this->soData[$item->id] = [
-                'fisik'      => $item->Stock_Opname ?? '',
-                'keterangan' => $item->Keterangan ?? '',
-            ];
-        }
+        return StockOpname::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($subQuery) {
+                    $subQuery->where('Nama_Item', 'like', '%' . $this->search . '%');
+                    if (is_numeric($this->search)) {
+                        $subQuery->orWhere('Kode_Item', (int) $this->search);
+                    }
+                });
+            })
+            ->orderBy($this->sortBy, $this->sortDirection);
     }
 
     public function toggleSoMode()
     {
         if ($this->isSoActive) {
-            $this->loadSoData();
+            // Logika untuk MEMBATALKAN mode SO
+            $this->stokFisik = [];
+            $this->keterangan = [];
             $this->resetValidation();
-            session()->flash('info', 'Stock opname dibatalkan, data input dikembalikan.');
+            session()->flash('info', 'Stock opname dibatalkan.');
         } else {
-            session()->flash('success', 'Mode stock opname aktif. Silakan isi stok fisik.');
+            // Logika untuk MEMULAI mode SO
+            // Ambil item yang sedang ditampilkan di halaman saat ini
+            $stockOpnamesOnPage = $this->getStockOpnameQuery()->paginate(10);
+
+            // Siapkan array sementara untuk diisi
+            $tempStokFisik = [];
+            $tempKeterangan = [];
+
+            // Loop melalui setiap item dan isi array dengan data yang sudah ada
+            foreach ($stockOpnamesOnPage as $item) {
+                $id = (string) $item->id;
+                $tempStokFisik[$id] = $item->Stock_Opname;
+                $tempKeterangan[$id] = $item->Keterangan;
+            }
+
+            // Masukkan data yang sudah di-load ke property utama
+            $this->stokFisik = $tempStokFisik;
+            $this->keterangan = $tempKeterangan;
+
+            session()->flash('success', 'Mode stock opname aktif. Silakan edit stok fisik.');
         }
+
         $this->isSoActive = !$this->isSoActive;
     }
 
-    public function updatedSoData($value, $key)
-    {
-        [$id, $field] = explode('.', $key);
-
-        if ($field === 'fisik') {
-            $this->stokFisikValue = $value;
-            $this->validateOnly('stokFisikValue');
-        }
-    }
 
     public function saveStockOpname()
     {
-        $this->validate([
-            'soData.*.fisik' => 'nullable|integer|min:0',
-            'soData.*.keterangan' => 'nullable|string|max:255',
-        ]);
+        if (!$this->isSoActive) {
+            session()->flash('error', 'Mode stock opname tidak aktif.');
+            return;
+        }
 
         $updatedCount = 0;
+        $errorCount = 0;
 
-        foreach ($this->soData as $id => $data) {
-            $stokFisik = $data['fisik'];
+        try {
+            foreach ($this->stokFisik as $id => $fisikValue) {
+                // Lewati jika nilainya tidak diisi
+                if ($fisikValue === '' || $fisikValue === null) {
+                    continue;
+                }
 
-            if (is_numeric($stokFisik) && $stokFisik !== '') {
+                // Validasi input
+                if (!is_numeric($fisikValue) || $fisikValue < 0) {
+                    $errorCount++;
+                    $this->addError("stokFisik.{$id}", "Stok harus angka positif.");
+                    continue;
+                }
+
                 $item = StockOpname::find($id);
-                if ($item) {
-                    $item->Stock_Opname = (int) $stokFisik;
-                    $item->Keterangan = $data['keterangan'] ?: null;
+                if (!$item) {
+                    continue;
+                }
+
+                $stokFisikInt = (int)$fisikValue;
+                $keteranganValue = $this->keterangan[$id] ?? null;
+
+                // Update hanya jika ada perubahan
+                if ($item->Stock_Opname != $stokFisikInt || $item->Keterangan != $keteranganValue) {
+                    $item->Stock_Opname = $stokFisikInt;
+                    $item->Keterangan = $keteranganValue;
                     $item->save();
                     $updatedCount++;
                 }
             }
-        }
 
-        $this->isSoActive = false;
-        $this->loadSoData();
-        session()->flash('success', "Stock Opname berhasil disimpan! ($updatedCount item diperbarui)");
-        $this->resetPage();
+            if ($errorCount > 0) {
+                session()->flash('error', "Terdapat {$errorCount} kesalahan input. Periksa kembali data Anda.");
+                return;
+            }
+
+            // Reset mode SO
+            $this->isSoActive = false;
+            $this->stokFisik = [];
+            $this->keterangan = [];
+            $this->resetValidation();
+
+            if ($updatedCount > 0) {
+                session()->flash('success', "Stock Opname berhasil disimpan! ({$updatedCount} item diperbarui)");
+            } else {
+                session()->flash('info', "Tidak ada perubahan data yang disimpan.");
+            }
+
+            $this->dispatch('$refresh');
+        } catch (\Exception $e) {
+            \Log::error('Kesalahan Simpan Stock Opname: ' . $e->getMessage());
+            session()->flash('error', 'Terjadi kesalahan saat menyimpan data.');
+        }
     }
 
     public function sort($column)
@@ -121,38 +161,16 @@ new class extends Component
         }
     }
 
-    /**
-     * Query ini mengambil data seperti biasa. Kalkulasi stok sistem
-     * akan ditangani secara otomatis oleh Accessor di Model.
-     */
     public function with(): array
     {
-        $stockOpnames = StockOpname::query()
-            ->when($this->search, function ($query) {
-                $query->where(function ($subQuery) {
-                    $subQuery->where('Nama_Item', 'like', '%' . $this->search . '%');
-                    if (is_numeric($this->search)) {
-                        $subQuery->orWhere('Kode_Item', (int) $this->search);
-                    }
-                });
-            })
-            ->orderBy($this->sortBy, $this->sortDirection)
-            ->paginate(10);
-
-        foreach ($stockOpnames as $item) {
-            if (!isset($this->soData[$item->id])) {
-                $this->soData[$item->id] = [
-                    'fisik' => $item->Stock_Opname ?? '',
-                    'keterangan' => $item->Keterangan ?? '',
-                ];
-            }
-        }
+        $stockOpnames = $this->getStockOpnameQuery()->paginate(10);
 
         return [
             'stockOpnames' => $stockOpnames,
         ];
     }
-}; ?>
+};
+?>
 
 @section('title', 'Stock Opname')
 <div>
@@ -160,6 +178,11 @@ new class extends Component
     @if (session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @elseif (session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @elseif (session('info'))
@@ -177,27 +200,28 @@ new class extends Component
         <div class="card-header">
             <h5 class="mb-0">Tabel Stock Opname</h5>
 
-            {{-- Search Bar & Tombol Aksi Utama --}}
             <div class="d-flex justify-content-between align-items-center row py-3 gap-3 gap-md-0">
                 <div class="col-md-8">
-                    <input
-                        wire:model.live.debounce.300ms="search"
-                        type="text"
-                        class="form-control"
+                    <input wire:model.live.debounce.300ms="search" type="text" class="form-control"
                         placeholder="Cari berdasarkan Nama atau Kode Item...">
                 </div>
                 <div class="col-md-4 text-md-end">
-                    @if($isSoActive)
-                    {{-- Tombol Simpan & Batal muncul saat mode SO aktif --}}
-                    <button wire:click="saveStockOpname" wire:loading.attr="disabled" class="btn btn-success me-2">
-                        <span wire:loading wire:target="saveStockOpname" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    @if ($isSoActive)
+                    <button
+                        type="button"
+                        x-data="{ isSaving: false }"
+                        @click="isSaving = true; $wire.call('saveStockOpname')"
+                        :disabled="isSaving"
+                        wire:target="saveStockOpname"
+                        class="btn btn-success me-2">
+                        <span wire:loading wire:target="saveStockOpname" class="spinner-border spinner-border-sm"
+                            role="status" aria-hidden="true"></span>
                         <span wire:loading.remove wire:target="saveStockOpname"><i class='bx bx-save me-1'></i></span>
                         Simpan
                     </button>
-                    <button wire:click="toggleSoMode" class="btn btn-outline-secondary">Batalkan</button>
+                    <button type="button" wire:click.prevent="toggleSoMode" wire:loading.attr="disabled" class="btn btn-outline-secondary">Batalkan</button>
                     @else
-                    {{-- Tombol Pengaman Utama --}}
-                    <button wire:click="toggleSoMode" class="btn btn-primary">
+                    <button type="button" wire:click.prevent="toggleSoMode" class="btn btn-primary">
                         <i class='bx bx-edit-alt me-1'></i> Lakukan Stock Opname
                     </button>
                     @endif
@@ -205,13 +229,15 @@ new class extends Component
             </div>
         </div>
 
-        {{-- Tabel Data --}}
         <div class="table-responsive text-nowrap">
             <table class="table table-hover">
                 <thead class="table-light">
                     <tr>
                         <th style="cursor: pointer;" wire:click="sort('Kode_Item')">Kode Item <i class="bx bx-sort-alt-2"></i></th>
                         <th style="cursor: pointer;" wire:click="sort('Nama_Item')">Nama Item <i class="bx bx-sort-alt-2"></i></th>
+                        <th>Stok Masuk</th>
+                        <th>Stok Keluar</th>
+                        <th>Stok Retur</th>
                         <th>Stok Sistem</th>
                         <th style="width: 150px;">Stok Fisik</th>
                         <th>Selisih</th>
@@ -221,61 +247,68 @@ new class extends Component
                 <tbody>
                     @forelse ($stockOpnames as $item)
                     @php
-                    $id = $item->id;
-                    // INI BAGIAN AJAIBNYA!
-                    // Kode ini tidak berubah, tapi sekarang memanggil Accessor di model
-                    // untuk menghitung (Stok_Masuk - Stok_Keluar - Stok_Retur)
+                    $id = (string) $item->id;
                     $stokSistem = $item->Stok_Sistem;
+                    $stokMasuk = $item->Stok_Masuk;
+                    $stokKeluar = $item->Stok_Keluar;
+                    $stokRetur = $item->Stok_Retur;
 
-                    $stokFisikInput = $this->soData[$id]['fisik'] ?? '';
-
-                    $selisih = null;
-                    if (is_numeric($stokFisikInput) && $stokFisikInput !== '') {
-                    $selisih = $stokSistem - (int)$stokFisikInput;
+                    // Tentukan nilai stok fisik yang akan digunakan untuk perhitungan
+                    $nilaiFisikUntukHitung = null;
+                    if ($isSoActive) {
+                    // Jika mode edit, gunakan nilai dari input yang sedang diketik
+                    $nilaiFisikUntukHitung = $this->stokFisik[$id] ?? null;
+                    } else {
+                    // Jika mode view, gunakan nilai dari database yang sudah disimpan
+                    $nilaiFisikUntukHitung = $item->Stock_Opname;
                     }
 
-                    $selisihBgClass = 'bg-label-secondary'; // Default
+                    // Lakukan kalkulasi selisih
+                    $selisih = null;
+                    if (is_numeric($nilaiFisikUntukHitung)) {
+                    $selisih = $stokSistem - (int) $nilaiFisikUntukHitung;
+                    }
+
+                    // Logika untuk warna background selisih (tetap sama)
+                    $selisihBgClass = 'bg-label-secondary';
                     if (is_numeric($selisih)) {
                     if ($selisih > 0) $selisihBgClass = 'bg-label-danger';
                     elseif ($selisih < 0) $selisihBgClass='bg-label-success' ;
                         else $selisihBgClass='bg-label-primary' ;
                         }
                         @endphp
-                        <tr wire:key="{{ $id }}">
+                        <tr wire:key="item-{{ $id }}">
                         <td><strong>{{ $item->Kode_Item }}</strong></td>
                         <td>{{ $item->Nama_Item }}</td>
+                        <td><span class="fw-semibold">{{ $stokMasuk }}</span></td>
+                        <td><span class="fw-semibold">{{ $stokKeluar }}</span></td>
+                        <td><span class="fw-semibold">{{ $stokRetur }}</span></td>
                         <td><span class="fw-semibold">{{ $stokSistem }}</span></td>
-
-                        {{-- Kolom Input Stok Fisik --}}
                         <td>
-                            @if($isSoActive)
-                            <input
-                                wire:model.live.debounce.500ms="soData.{{ $id }}.fisik"
-                                type="number"
-                                min="0"
-                                class="form-control form-control-sm @error('soData.'.$id.'.fisik') is-invalid @enderror"
-                                placeholder="0">
+                            @if ($isSoActive)
+                            <input wire:model.blur="stokFisik.{{ $id }}"
+                                type="number" min="0" step="1"
+                                class="form-control form-control-sm @error('stokFisik.' . $id) is-invalid @enderror"
+                                placeholder="Isi stok...">
+                            @error('stokFisik.' . $id)
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                             @else
                             {{ $item->Stock_Opname ?? 'N/A' }}
                             @endif
                         </td>
-
-                        {{-- Kolom Selisih (Real-time) --}}
                         <td>
                             <span class="badge {{ $selisihBgClass }}">
                                 {{ is_numeric($selisih) ? abs($selisih) : 'N/A' }}
                             </span>
                         </td>
-
-                        {{-- Kolom Keterangan (Dropdown) --}}
                         <td>
-                            @if($isSoActive)
-                            <select
-                                wire:model="soData.{{ $id }}.keterangan"
+                            @if ($isSoActive)
+                            <select wire:model="keterangan.{{ $id }}"
                                 class="form-select form-select-sm"
-                                @disabled(!is_numeric($stokFisikInput) || $selisih==0)>
+                                @disabled(!is_numeric($nilaiFisikUntukHitung) || $selisih==0)>
                                 <option value="">Pilih...</option>
-                                @foreach($keteranganOptions as $option)
+                                @foreach ($keteranganOptions as $option)
                                 <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </select>
@@ -286,14 +319,13 @@ new class extends Component
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center">Tidak ada data ditemukan.</td>
+                            <td colspan="9" class="text-center">Tidak ada data ditemukan.</td>
                         </tr>
                         @endforelse
                 </tbody>
             </table>
         </div>
 
-        {{-- Paginasi --}}
         @if ($stockOpnames->hasPages())
         <div class="card-footer d-flex justify-content-center">
             {{ $stockOpnames->links() }}

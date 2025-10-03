@@ -84,7 +84,7 @@ new class extends Component
         }
 
         session()->flash('success', 'Data pengembalian berhasil ditambahkan dan stok telah diperbarui.');
-        return $this->redirectRoute('pengembalian.index', navigate: true);
+        return redirect()->route('pengembalian.index');
     }
 };
 ?>
@@ -135,14 +135,14 @@ new class extends Component
 
                 <div class="mb-3">
                     <label for="nama_item" class="form-label">Nama Item</label>
-                    <input type="text" class="form-control" id="nama_item" wire:model="nama_item" readonly>
+                    <input type="text" class="form-control" id="nama_item" wire:model="nama_item" value="{{$nama_item ?? ''}}" readonly>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="jumlah" class="form-label">Jumlah</label>
                         <input type="number" class="form-control @error('jumlah') is-invalid @enderror"
-                            id="jumlah" wire:model="jumlah" placeholder="Contoh: 5">
+                            id="jumlah" wire:model="jumlah" value="{{$jumlah ?? ''}}" placeholder="Contoh: 5">
                         @error('jumlah') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-6">

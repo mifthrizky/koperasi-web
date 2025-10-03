@@ -32,6 +32,8 @@ new class extends Component
         $this->barangIdToDelete = null;
 
         session()->flash('success', 'Data berhasil dihapus.');
+
+        $this->dispatch('$refresh');
     }
 
     public function boot()
@@ -97,9 +99,16 @@ new class extends Component
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">Tabel Data Barang</h5>
-                <a href="{{ route('barang.create') }}" class="btn btn-primary" wire:navigate>
-                    <i class="bx bx-plus-circle me-1"></i> Tambah Data
-                </a>
+                <div>
+                    <a href="{{ route('barang.import') }}" class="btn btn-info me-2">
+                        <i class="bx bx-upload me-1"></i> Import dari Excel
+                    </a>
+
+                    <a href="{{ route('barang.create') }}" class="btn btn-primary" wire:navigate>
+                        <i class="bx bx-plus-circle me-1"></i> Tambah Data
+                    </a>
+                </div>
+
             </div>
 
             {{-- Pencarian --}}
@@ -175,23 +184,23 @@ new class extends Component
 {{-- SweetAlert2 --}}
 @script
 <script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.on('show-delete-confirmation', () => {
-            Swal.fire({
-                title: 'Anda yakin?',
-                text: "Data yang dihapus tidak dapat dikembalikan!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Livewire.dispatch('deleteConfirmed')
-                }
-            })
-        });
+    // Listener ini akan dipasang sekali saat halaman dimuat dan lebih stabil
+    window.addEventListener('show-delete-confirmation', event => {
+        Swal.fire({
+            title: 'Anda yakin?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Kirim event kembali ke komponen Livewire yang aktif
+                Livewire.dispatch('deleteConfirmed')
+            }
+        })
     });
 </script>
 @endscript

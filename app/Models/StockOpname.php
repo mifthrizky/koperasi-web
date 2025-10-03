@@ -15,7 +15,6 @@ class StockOpname extends Model
      *
      * @var array<int, string>
      */
-
     protected $fillable = [
         'Kode_Item',
         'Nama_Item',
@@ -47,7 +46,7 @@ class StockOpname extends Model
         $keluar = $this->Stok_Keluar ?? 0;
         $retur = $this->Stok_Retur ?? 0;
 
-        // Lakukan kalkulasi real-time
+        // --- PERBAIKAN LOGIKA KALKULASI SESUAI ATURAN BISNIS ---
         return $masuk - $keluar - $retur;
     }
 }

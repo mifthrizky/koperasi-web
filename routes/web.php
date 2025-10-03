@@ -3,9 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
-Route::get('/', function () {
-  return view('welcome');
-})->name('home');
+Route::view('/', 'dashboard')
+  ->middleware(['auth', 'verified'])
+  ->name('dashboard');
 
 Route::view('dashboard', 'dashboard')
   ->middleware(['auth', 'verified'])
@@ -43,6 +43,10 @@ Route::middleware(['auth'])->group(function () {
   Volt::route('data/stock-opname', 'data.stock-opname.index')->name('stock-opname.index');
   // ======================
 
+  Volt::route('data/barang/import', 'data.barang.import')->name('barang.import');
+  Volt::route('data/pembelian/import', 'data.pembelian.import')->name('pembelian.import');
+  Volt::route('data/penjualan/import', 'data.penjualan.import')->name('penjualan.import');
+  Volt::route('data/pengembalian/import', 'data.pengembalian.import')->name('pengembalian.import');
 });
 
 require __DIR__ . '/auth.php';
