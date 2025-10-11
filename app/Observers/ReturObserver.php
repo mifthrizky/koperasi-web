@@ -12,12 +12,20 @@ class ReturObserver
      */
     public function created(Retur $retur): void
     {
-        // Cari data stok berdasarkan Kode_Item dari penjua$retur yang baru dibuat
-        $stockItem = StockOpname::where('Kode_Item', $retur->Kode_Item)->first();
-
-        if ($stockItem) {
-            $stockItem->increment('Stok_Retur', $retur->Jumlah);
-        }
+        StockOpname::updateOrCreate(
+            [
+                'Kode_Item' => $retur->Kode_Item,
+                'Bulan' => $retur->Bulan,
+                'Tahun' => $retur->Tahun,
+            ],
+            [
+                // Jika membuat baru, isi Nama_Item dan beri nilai default 0
+                'Nama_Item'   => $barang->Nama_Item ?? 'Nama Tidak Ditemukan',
+                'Stok_Masuk'  => \Illuminate\Support\Facades\DB::raw("`Stok_Masuk` + 0"),
+                'Stok_Keluar' => \Illuminate\Support\Facades\DB::raw("`Stok_Keluar` + 0"),
+                'Stok_Retur'  => \Illuminate\Support\Facades\DB::raw("`Stok_Retur` + {$retur->Jumlah}"),
+            ]
+        );
     }
 
     /**

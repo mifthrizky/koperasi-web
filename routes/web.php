@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
   Volt::route('data/pembelian/import', 'data.pembelian.import')->name('pembelian.import');
   Volt::route('data/penjualan/import', 'data.penjualan.import')->name('penjualan.import');
   Volt::route('data/pengembalian/import', 'data.pengembalian.import')->name('pengembalian.import');
+  Volt::route('data/stock-opname/import', 'data.stock-opname.import')->name('stock-opname.import');
 });
 
 require __DIR__ . '/auth.php';

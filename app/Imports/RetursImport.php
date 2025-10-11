@@ -10,23 +10,31 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 
 class RetursImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
-    /**
-     * @param array $row
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
+    private string $month;
+    private int $year;
+
+    public function __construct(string $month, int $year)
+    {
+        $this->month = $month;
+        $this->year = $year;
+    }
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            // Gunakan Pembelian::create() karena setiap baris adalah transaksi pembelian baru.
-            // Observer yang sudah dibuat akan otomatis berjalan setelah ini.
+            if (empty($row['kd_item'])) {
+                continue; // Lewati baris jika kode_item kosong
+            }
+
             Retur::create([
-                'Kode_Item' => $row['kode_item'],
+                'Kode_Item' => $row['kd_item'],
                 'Nama_Item' => $row['nama_item'],
-                'Jumlah'    => $row['jumlah'],
+                'Jumlah'    => $row['jml'],
                 'Satuan'    => $row['satuan'],
-                'Bulan'     => $row['bulan'],
-                'Tahun'     => $row['tahun'],
+                'Harga'     => $row['harga'],
+                'Potongan'  => $row['pot'],     // "Pot. %" → jadi 'pot'
+                'Total_Harga' => $row['total'],
+                'Bulan'     => $this->month,
+                'Tahun'     => $this->year,
             ]);
         }
     }

@@ -131,9 +131,6 @@ new class extends Component
                         <th style="width: 120px;">Kode Item</th>
                         <th style="max-width: 250px;">Nama Item</th>
                         <th style="width: 80px;">Jenis</th>
-                        <th style="width: 120px; cursor: pointer;" wire:click="sort('Harga_Satuan')">
-                            Harga Satuan <i class="bx bx-sort-alt-2 text-muted"></i>
-                        </th>
                         <th style="width: 80px;">Aksi</th>
                     </tr>
                 </thead>
@@ -145,7 +142,6 @@ new class extends Component
                             {{ $barang->Nama_Item }}
                         </td>
                         <td><span class="badge bg-label-primary">{{ $barang->Jenis }}</span></td>
-                        <td>Rp {{ number_format($barang->Harga_Satuan, 0, ',', '.') }}</td>
                         <td>
                             <div class="dropdown">
                                 <button class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">

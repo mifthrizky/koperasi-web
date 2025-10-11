@@ -10,9 +10,26 @@ new class extends Component
 {
     use WithFileUploads;
 
+    // Pilihan bulan dan tahun
+    public string $selectedMonth = '';
+    public string $selectedYear = '';
+
     // Properti untuk menampung file yang di-upload
-    #[Rule('required|mimes:xlsx,xls')]
+    #[Rule([
+        'file' => 'required|mimes:xlsx,xls',
+        'selectedMonth' => 'required',
+        'selectedYear' => 'required',
+    ], message: [
+        'file.required' => 'File Excel wajib diunggah.',
+        'selectedMonth.required' => 'Bulan wajib dipilih.',
+        'selectedYear.required' => 'Tahun wajib dipilih.',
+    ])]
     public $file;
+
+    public function mount()
+    {
+        $this->selectedYear = date('Y'); // Default ke tahun sekarang
+    }
 
     /**
      * Proses file excel yang di-upload.
@@ -22,7 +39,7 @@ new class extends Component
         $this->validate();
 
         try {
-            Excel::import(new RetursImport, $this->file);
+            Excel::import(new RetursImport($this->selectedMonth, (int)$this->selectedYear), $this->file);
 
             session()->flash('success', 'Data pengembalian berhasil diimpor!');
             $this->dispatch('import-success', url: route('pengembalian.index'));
@@ -38,6 +55,30 @@ new class extends Component
             // Tangani error umum lainnya
             session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function with(): array
+    {
+        $years = range(date('Y'), date('Y') - 5);
+        $months = [
+            'JANUARI',
+            'FEBRUARI',
+            'MARET',
+            'APRIL',
+            'MEI',
+            'JUNI',
+            'JULI',
+            'AGUSTUS',
+            'SEPTEMBER',
+            'OKTOBER',
+            'NOVEMBER',
+            'DESEMBER'
+        ];
+
+        return [
+            'years' => $years,
+            'months' => $months,
+        ];
     }
 }; ?>
 
@@ -71,6 +112,30 @@ new class extends Component
             </div>
 
             <form wire:submit.prevent="import" class="mt-4">
+                <!-- Dropdown bulan, tahun -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="month" class="form-label">Pilih Bulan Pengembalian</label>
+                        <select id="month" class="form-select @error('selectedMonth') is-invalid @enderror" wire:model.live="selectedMonth">
+                            <option value="" disabled>-- Pilih Bulan --</option>
+                            @foreach ($months as $month)
+                            <option value="{{ $month }}">{{ ucfirst(strtolower($month)) }}</option>
+                            @endforeach
+                        </select>
+                        @error('selectedMonth') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-md-6">
+                        <label for="year" class="form-label">Pilih Tahun</label>
+                        <select id="year" class="form-select @error('selectedYear') is-invalid @enderror" wire:model.live="selectedYear">
+                            <option value="" disabled>-- Pilih Tahun --</option>
+                            @foreach ($years as $year)
+                            <option value="{{ $year }}">{{ $year }}</option>
+                            @endforeach
+                        </select>
+                        @error('selectedYear') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label for="file" class="form-label">Pilih File Excel (.xlsx, .xls)</label>
                     <input type="file" class="form-control @error('file') is-invalid @enderror" id="file" wire:model="file">
@@ -78,7 +143,7 @@ new class extends Component
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">
-                    <a href="{{ route('pengembalian.index') }}" class="btn btn-secondary me-2" wire:navigate>Batal</a>
+                    <a href="{{ route('pembelian.index') }}" class="btn btn-secondary me-2" wire:navigate>Batal</a>
                     <button type="submit" class="btn btn-primary">
                         <span wire:loading.remove wire:target="import">Impor Data</span>
                         <span wire:loading wire:target="import">Mengimpor... <i class="bx bx-loader-alt bx-spin"></i></span>

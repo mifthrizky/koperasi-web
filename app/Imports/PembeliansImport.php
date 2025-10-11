@@ -10,14 +10,23 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 
 class PembeliansImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
-    /**
-     * @param Collection $rows
-     */
+    private string $month;
+    private int $year;
+
+    // Constructor bulan dan tahun
+    public function __construct(string $month, int $year)
+    {
+        $this->month = $month;
+        $this->year = $year;
+    }
+
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            // Gunakan Pembelian::create() karena setiap baris adalah transaksi pembelian baru.
-            // Observer yang sudah dibuat akan otomatis berjalan setelah ini.
+            if (empty($row['kode_item'])) {
+                continue;
+            }
+
             Pembelian::create([
                 'Kode_Item'   => $row['kode_item'],
                 'Nama_Item'   => $row['nama_item'],
@@ -25,8 +34,8 @@ class PembeliansImport implements ToCollection, WithHeadingRow, WithChunkReading
                 'Jumlah'      => $row['jumlah'],
                 'Satuan'      => $row['satuan'],
                 'Total_Harga' => $row['total_harga'],
-                'Bulan'       => $row['bulan'],
-                'Tahun'       => $row['tahun']
+                'Bulan'       => $this->month,
+                'Tahun'       => $this->year,
             ]);
         }
     }

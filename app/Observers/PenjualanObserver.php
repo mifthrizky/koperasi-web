@@ -12,12 +12,20 @@ class PenjualanObserver
      */
     public function created(Penjualan $penjualan): void
     {
-        // Cari data stok berdasarkan Kode_Item dari penjua$penjualan yang baru dibuat
-        $stockItem = StockOpname::where('Kode_Item', $penjualan->Kode_Item)->first();
-
-        if ($stockItem) {
-            $stockItem->increment('Stok_Keluar', $penjualan->Jumlah);
-        }
+        StockOpname::updateOrCreate(
+            [
+                'Kode_Item' => $penjualan->Kode_Item,
+                'Bulan'     => $penjualan->Bulan,
+                'Tahun'     => (int)$penjualan->Tahun,
+            ],
+            // Nilai yang akan di-update atau di-create
+            [
+                'Nama_Item'   => $barang->Nama_Item ?? 'Nama Tidak Ditemukan',
+                'Stok_Masuk'  => \Illuminate\Support\Facades\DB::raw("`Stok_Masuk` + 0"),
+                'Stok_Keluar' => \Illuminate\Support\Facades\DB::raw("`Stok_Keluar` + {$penjualan->Jumlah}"),
+                'Stok_Retur'  => \Illuminate\Support\Facades\DB::raw("`Stok_Retur` + 0"),
+            ]
+        );
     }
 
     /**

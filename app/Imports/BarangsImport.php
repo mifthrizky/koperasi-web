@@ -24,7 +24,6 @@ class BarangsImport implements ToCollection, WithHeadingRow, WithChunkReading
                 [
                     'Nama_Item'    => $row['nama_item'], // Data untuk diupdate atau dibuat
                     'Jenis'        => $row['jenis'],
-                    'Harga_Satuan' => $row['harga_satuan'],
                 ]
             );
         }

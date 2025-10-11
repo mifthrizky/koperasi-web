@@ -58,13 +58,12 @@ class ImportReturData extends Command
                     // **BAGIAN PENTING: Mapping Kolom**
                     // Kita buat array baru untuk memastikan data sesuai dengan model
                     $mappedData = [
-                        'No' => (int) $data['No'],
                         'Kode_Item' => $data['Kode_Item'],
                         'Nama_Item' => $data['Nama_Item'],
                         'Jumlah' => (int) $data['Jml'], // Ambil dari 'Jml', simpan sebagai 'Jumlah'
                         'Satuan' => $data['Satuan'],
                         'Harga' => (int) $data['Harga'],
-                        'Pot._%' => (int) $data['Pot. %'],
+                        'Potongan' => (int) $data['Pot. %'],
                         'Total_Harga' => (int) $data['Total_Harga'],
                         'Bulan' => $data['Bulan'],
                         'Tahun' => (int) $data['Tahun'],

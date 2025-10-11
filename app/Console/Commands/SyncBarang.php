@@ -32,29 +32,17 @@ class SyncBarang extends Command
         foreach ($grouped as $kode => $items) {
             $processed++;
 
-            // Menghitung harga satuan
-            $stokMasuk  = $items->sum('Jumlah');
-            $totalPembHarga = $items->sum(fn($i) => isset($i->Total_Harga) ? (float) $i->Total_Harga : 0);
-
             // Ambil sample metadata
             $sample = $items->last() ?? $items->first();
             $nama   = $sample->Nama_Item ?? null;
             $jenis  = $sample->Jenis ?? null;
-            $satuan = $sample->Satuan ?? null;
 
-            // Hitung harga satuan
-            $hargaSatuan = $stokMasuk > 0
-                ? ($totalPembHarga / $stokMasuk)
-                : 0;
 
             // Simpan/update
             $attributes = ['Kode_Item' => $kode];
             $values = [
                 'Nama_Item'    => $nama,
                 'Jenis'        => $jenis,
-                'Harga_Satuan' => $hargaSatuan,
-                'Stok_Masuk'   => $stokMasuk,
-                'Satuan'       => $satuan,
             ];
 
             $model = Barang::updateOrCreate($attributes, $values);

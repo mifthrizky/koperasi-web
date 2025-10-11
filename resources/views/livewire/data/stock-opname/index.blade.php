@@ -4,6 +4,8 @@ use Livewire\Volt\Component;
 use App\Models\StockOpname;
 use Livewire\WithPagination;
 use Illuminate\Pagination\Paginator;
+use Livewire\Attributes\Computed;
+
 
 new class extends Component
 {
@@ -12,6 +14,7 @@ new class extends Component
     public string $search = '';
     public string $sortBy = 'Kode_Item';
     public string $sortDirection = 'asc';
+    public string $selectedMonth = '';
     public bool $isSoActive = false;
 
     public array $stokFisik = [];
@@ -29,9 +32,21 @@ new class extends Component
         Paginator::useBootstrap();
     }
 
+    #[Computed]
+    public function months()
+    {
+        // Daftar master urutan bulan
+        $urutanBulan = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
+        // Ambil nomor bulan sekarang (misal: Oktober = 10)
+        $bulanSekarang = now()->month;
+        // "Potong" array master dari awal sebanyak nomor bulan sekarang
+        return array_slice($urutanBulan, 0, $bulanSekarang);
+    }
+
     private function getStockOpnameQuery()
     {
         return StockOpname::query()
+            ->when($this->selectedMonth, fn($query) => $query->where('Bulan', $this->selectedMonth))
             ->when($this->search, function ($query) {
                 $query->where(function ($subQuery) {
                     $subQuery->where('Nama_Item', 'like', '%' . $this->search . '%');
@@ -46,37 +61,25 @@ new class extends Component
     public function toggleSoMode()
     {
         if ($this->isSoActive) {
-            // Logika untuk MEMBATALKAN mode SO
             $this->stokFisik = [];
             $this->keterangan = [];
             $this->resetValidation();
             session()->flash('info', 'Stock opname dibatalkan.');
         } else {
-            // Logika untuk MEMULAI mode SO
-            // Ambil item yang sedang ditampilkan di halaman saat ini
             $stockOpnamesOnPage = $this->getStockOpnameQuery()->paginate(10);
-
-            // Siapkan array sementara untuk diisi
             $tempStokFisik = [];
             $tempKeterangan = [];
-
-            // Loop melalui setiap item dan isi array dengan data yang sudah ada
             foreach ($stockOpnamesOnPage as $item) {
                 $id = (string) $item->id;
                 $tempStokFisik[$id] = $item->Stock_Opname;
                 $tempKeterangan[$id] = $item->Keterangan;
             }
-
-            // Masukkan data yang sudah di-load ke property utama
             $this->stokFisik = $tempStokFisik;
             $this->keterangan = $tempKeterangan;
-
             session()->flash('success', 'Mode stock opname aktif. Silakan edit stok fisik.');
         }
-
         $this->isSoActive = !$this->isSoActive;
     }
-
 
     public function saveStockOpname()
     {
@@ -84,58 +87,46 @@ new class extends Component
             session()->flash('error', 'Mode stock opname tidak aktif.');
             return;
         }
-
         $updatedCount = 0;
         $errorCount = 0;
-
         try {
-            foreach ($this->stokFisik as $id => $fisikValue) {
-                // Lewati jika nilainya tidak diisi
-                if ($fisikValue === '' || $fisikValue === null) {
-                    continue;
-                }
+            $petugasName = Auth::user()->name;
 
-                // Validasi input
+            foreach ($this->stokFisik as $id => $fisikValue) {
+                if ($fisikValue === '' || $fisikValue === null) continue;
+
                 if (!is_numeric($fisikValue) || $fisikValue < 0) {
                     $errorCount++;
                     $this->addError("stokFisik.{$id}", "Stok harus angka positif.");
                     continue;
                 }
-
                 $item = StockOpname::find($id);
-                if (!$item) {
-                    continue;
-                }
+                if (!$item) continue;
 
                 $stokFisikInt = (int)$fisikValue;
                 $keteranganValue = $this->keterangan[$id] ?? null;
 
-                // Update hanya jika ada perubahan
                 if ($item->Stock_Opname != $stokFisikInt || $item->Keterangan != $keteranganValue) {
                     $item->Stock_Opname = $stokFisikInt;
                     $item->Keterangan = $keteranganValue;
+                    $item->petugas = $petugasName;
                     $item->save();
                     $updatedCount++;
                 }
             }
-
             if ($errorCount > 0) {
                 session()->flash('error', "Terdapat {$errorCount} kesalahan input. Periksa kembali data Anda.");
                 return;
             }
-
-            // Reset mode SO
             $this->isSoActive = false;
             $this->stokFisik = [];
             $this->keterangan = [];
             $this->resetValidation();
-
             if ($updatedCount > 0) {
                 session()->flash('success', "Stock Opname berhasil disimpan! ({$updatedCount} item diperbarui)");
             } else {
                 session()->flash('info', "Tidak ada perubahan data yang disimpan.");
             }
-
             $this->dispatch('$refresh');
         } catch (\Exception $e) {
             \Log::error('Kesalahan Simpan Stock Opname: ' . $e->getMessage());
@@ -156,7 +147,7 @@ new class extends Component
 
     public function updating($property)
     {
-        if (in_array($property, ['search'])) {
+        if (in_array($property, ['search', 'selectedMonth'])) {
             $this->resetPage();
         }
     }
@@ -164,16 +155,16 @@ new class extends Component
     public function with(): array
     {
         $stockOpnames = $this->getStockOpnameQuery()->paginate(10);
-
         return [
             'stockOpnames' => $stockOpnames,
+            'months' => $this->months(),
         ];
     }
 };
 ?>
 
-@section('title', 'Stock Opname')
 <div>
+    @section('title', 'Stock Opname')
     {{-- Notifikasi --}}
     @if (session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -199,30 +190,32 @@ new class extends Component
     <div class="card">
         <div class="card-header">
             <h5 class="mb-0">Tabel Stock Opname</h5>
-
             <div class="d-flex justify-content-between align-items-center row py-3 gap-3 gap-md-0">
-                <div class="col-md-8">
-                    <input wire:model.live.debounce.300ms="search" type="text" class="form-control"
-                        placeholder="Cari berdasarkan Nama atau Kode Item...">
+                <div class="col-md-3">
+                    <select wire:model.live="selectedMonth" class="form-select">
+                        <option value="">Semua Bulan</option>
+                        @foreach($months as $month)
+                        <option value="{{ $month }}">{{ ucfirst(strtolower($month)) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <input wire:model.live.debounce.300ms="search" type="text" class="form-control" placeholder="Cari berdasarkan Nama atau Kode Item...">
                 </div>
                 <div class="col-md-4 text-md-end">
                     @if ($isSoActive)
-                    <button
-                        type="button"
-                        x-data="{ isSaving: false }"
-                        @click="isSaving = true; $wire.call('saveStockOpname')"
-                        :disabled="isSaving"
-                        wire:target="saveStockOpname"
-                        class="btn btn-success me-2">
-                        <span wire:loading wire:target="saveStockOpname" class="spinner-border spinner-border-sm"
-                            role="status" aria-hidden="true"></span>
+                    <button type="button" x-data="{ isSaving: false }" @click="isSaving = true; $wire.call('saveStockOpname')" :disabled="isSaving" wire:target="saveStockOpname" class="btn btn-success me-2">
+                        <span wire:loading wire:target="saveStockOpname" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                         <span wire:loading.remove wire:target="saveStockOpname"><i class='bx bx-save me-1'></i></span>
                         Simpan
                     </button>
                     <button type="button" wire:click.prevent="toggleSoMode" wire:loading.attr="disabled" class="btn btn-outline-secondary">Batalkan</button>
                     @else
+                    <a href="{{ route('stock-opname.import') }}" class="btn btn-info me-2" wire:navigate>
+                        <i class="bx bx-upload me-1"></i> Impor dari Excel
+                    </a>
                     <button type="button" wire:click.prevent="toggleSoMode" class="btn btn-primary">
-                        <i class='bx bx-edit-alt me-1'></i> Lakukan Stock Opname
+                        <i class='bx bx-edit-alt me-1'></i> Lakukan SO
                     </button>
                     @endif
                 </div>
@@ -242,6 +235,7 @@ new class extends Component
                         <th style="width: 150px;">Stok Fisik</th>
                         <th>Selisih</th>
                         <th style="width: 180px;">Keterangan</th>
+                        <th>Petugas</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -249,27 +243,11 @@ new class extends Component
                     @php
                     $id = (string) $item->id;
                     $stokSistem = $item->Stok_Sistem;
-                    $stokMasuk = $item->Stok_Masuk;
-                    $stokKeluar = $item->Stok_Keluar;
-                    $stokRetur = $item->Stok_Retur;
-
-                    // Tentukan nilai stok fisik yang akan digunakan untuk perhitungan
-                    $nilaiFisikUntukHitung = null;
-                    if ($isSoActive) {
-                    // Jika mode edit, gunakan nilai dari input yang sedang diketik
-                    $nilaiFisikUntukHitung = $this->stokFisik[$id] ?? null;
-                    } else {
-                    // Jika mode view, gunakan nilai dari database yang sudah disimpan
-                    $nilaiFisikUntukHitung = $item->Stock_Opname;
-                    }
-
-                    // Lakukan kalkulasi selisih
+                    $nilaiFisikUntukHitung = $isSoActive ? ($this->stokFisik[$id] ?? null) : $item->Stock_Opname;
                     $selisih = null;
                     if (is_numeric($nilaiFisikUntukHitung)) {
                     $selisih = $stokSistem - (int) $nilaiFisikUntukHitung;
                     }
-
-                    // Logika untuk warna background selisih (tetap sama)
                     $selisihBgClass = 'bg-label-secondary';
                     if (is_numeric($selisih)) {
                     if ($selisih > 0) $selisihBgClass = 'bg-label-danger';
@@ -280,16 +258,13 @@ new class extends Component
                         <tr wire:key="item-{{ $id }}">
                         <td><strong>{{ $item->Kode_Item }}</strong></td>
                         <td>{{ $item->Nama_Item }}</td>
-                        <td><span class="fw-semibold">{{ $stokMasuk }}</span></td>
-                        <td><span class="fw-semibold">{{ $stokKeluar }}</span></td>
-                        <td><span class="fw-semibold">{{ $stokRetur }}</span></td>
+                        <td><span class="fw-semibold">{{ $item->Stok_Masuk }}</span></td>
+                        <td><span class="fw-semibold">{{ $item->Stok_Keluar }}</span></td>
+                        <td><span class="fw-semibold">{{ $item->Stok_Retur}}</span></td>
                         <td><span class="fw-semibold">{{ $stokSistem }}</span></td>
                         <td>
                             @if ($isSoActive)
-                            <input wire:model.blur="stokFisik.{{ $id }}"
-                                type="number" min="0" step="1"
-                                class="form-control form-control-sm @error('stokFisik.' . $id) is-invalid @enderror"
-                                placeholder="Isi stok...">
+                            <input wire:model.blur="stokFisik.{{ $id }}" type="number" min="0" step="1" class="form-control form-control-sm @error('stokFisik.' . $id) is-invalid @enderror" placeholder="Isi stok...">
                             @error('stokFisik.' . $id)
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -304,9 +279,7 @@ new class extends Component
                         </td>
                         <td>
                             @if ($isSoActive)
-                            <select wire:model="keterangan.{{ $id }}"
-                                class="form-select form-select-sm"
-                                @disabled(!is_numeric($nilaiFisikUntukHitung) || $selisih==0)>
+                            <select wire:model="keterangan.{{ $id }}" class="form-select form-select-sm" @disabled(!is_numeric($nilaiFisikUntukHitung) || $selisih==0)>
                                 <option value="">Pilih...</option>
                                 @foreach ($keteranganOptions as $option)
                                 <option value="{{ $option }}">{{ $option }}</option>
@@ -316,10 +289,11 @@ new class extends Component
                             {{ $item->Keterangan ?? '-' }}
                             @endif
                         </td>
+                        <td>{{ $item->petugas ?? '-' }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center">Tidak ada data ditemukan.</td>
+                            <td colspan="10" class="text-center">Tidak ada data ditemukan.</td>
                         </tr>
                         @endforelse
                 </tbody>

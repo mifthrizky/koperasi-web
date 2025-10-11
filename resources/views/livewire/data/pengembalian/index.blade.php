@@ -56,10 +56,12 @@ new class extends Component
     #[Computed]
     public function months()
     {
-        $bulanDariDB = DB::getMongoDB()->selectCollection('returs')->distinct('Bulan');
-        $bulanDariDB = array_map(fn($b) => strtoupper(trim($b)), $bulanDariDB);
+        // Daftar master urutan bulan
         $urutanBulan = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
-        return array_values(array_intersect($urutanBulan, $bulanDariDB));
+        // Ambil nomor bulan sekarang (misal: Oktober = 10)
+        $bulanSekarang = now()->month;
+        // "Potong" array master dari awal sebanyak nomor bulan sekarang
+        return array_slice($urutanBulan, 0, $bulanSekarang);
     }
 
     public function boot()
@@ -174,7 +176,6 @@ new class extends Component
                         <th>Kode Item</th>
                         <th>Nama Item</th>
                         <th>Jumlah</th>
-                        <th>Tanggal Diretur</th>
                         <th>Bulan</th>
                         <th>Aksi</th>
                     </tr>
@@ -185,7 +186,6 @@ new class extends Component
                         <td><strong>{{ $retur->Kode_Item }}</strong></td>
                         <td>{{ $retur->Nama_Item }}</td>
                         <td>{{ $retur->Jumlah }} {{ $retur->Satuan }}</td>
-                        <td>{{ $retur->created_at->format('d-m-Y H:i') }}</td>
                         <td>{{ $retur->Bulan }}</td>
                         <td>
                             <div class="dropdown">
