@@ -1,4 +1,5 @@
 <?php
+
 use Livewire\Volt\Component;
 use Illuminate\Support\Facades\DB;
 use Livewire\WithPagination;
@@ -133,6 +134,32 @@ new class extends Component
 };
 ?>
 
+@push('styles')
+<style>
+    .table-word-wrap th,
+    .table-word-wrap td {
+        /* Memaksa teks untuk turun baris jika terlalu panjang */
+        word-wrap: break-word;
+        white-space: normal !important;
+        /* Memastikan wrapping aktif */
+    }
+
+    /* Beri lebar maksimal pada kolom yang berpotensi panjang */
+    .table-word-wrap th:nth-child(2),
+    .table-word-wrap td:nth-child(2) {
+        /* Kolom Nama Item */
+        max-width: 200px;
+        /* Sesuaikan nilainya jika perlu */
+    }
+
+    .table-word-wrap th:nth-child(3),
+    .table-word-wrap td:nth-child(3) {
+        /* Kolom Kode Item */
+        max-width: 150px;
+    }
+</style>
+@endpush
+
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-0">
@@ -143,52 +170,50 @@ new class extends Component
 
     <div class="card-body">
         @if(count($lowStockItems) > 0)
+        <!-- 🔹 Info Halaman di Atas List -->
+        <div class="d-flex justify-content-end align-items-center mb-2">
+            <small class="text-muted">
+                Menampilkan halaman <strong>{{ $page }}</strong> dari {{ $totalPages }}
+            </small>
+        </div>
 
-            <!-- 🔹 Info Halaman di Atas List -->
-            <div class="d-flex justify-content-end align-items-center mb-2">
-                <small class="text-muted">
-                    Menampilkan halaman <strong>{{ $page }}</strong> dari {{ $totalPages }}
-                </small>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px;">No</th>
-                            <th>Nama Item</th>
-                            <th>Kode Item</th>
-                            <th class="text-end">Stok Akhir</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($lowStockItems as $index => $item)
-                            <tr>
-                                <td>
-                                    <span class="badge bg-light text-dark">
-                                        {{ (($page - 1) * 10) + $index + 1 }}
-                                    </span>
-                                </td>
-                                <td>{{ $item['Nama_Item'] }}</td>
-                                <td><small class="text-muted">{{ $item['Kode_Item'] }}</small></td>
-                                <td class="text-end">
-                                    <span class="badge 
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">No</th>
+                        <th>Nama Item</th>
+                        <th>Kode Item</th>
+                        <th class="text-end">Stok Akhir</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($lowStockItems as $index => $item)
+                    <tr>
+                        <td>
+                            <span class="badge bg-light text-dark">
+                                {{ (($page - 1) * 10) + $index + 1 }}
+                            </span>
+                        </td>
+                        <td>{{ $item['Nama_Item'] }}</td>
+                        <td><small class="text-muted">{{ $item['Kode_Item'] }}</small></td>
+                        <td class="text-end">
+                            <span class="badge 
                                         {{ $item['stok_akhir'] <= 5 ? 'bg-danger' : ($item['stok_akhir'] <= 15 ? 'bg-warning text-dark' : 'bg-success') }}">
-                                        {{ $item['stok_akhir'] }} unit
-                                    </span>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                {{ $item['stok_akhir'] }} unit
+                            </span>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
 
             <!-- 🔹 Navigasi Pagination -->
             <div class="d-flex justify-content-between align-items-center px-3 py-2 border-top small">
                 <button wire:click="previousPage"
                     class="btn btn-sm btn-outline-secondary px-2 py-1"
                     style="font-size: 12px;"
-                    @disabled($page <= 1)>
+                    @disabled($page <=1)>
                     ← Sebelumnya
                 </button>
 
@@ -207,26 +232,28 @@ new class extends Component
                 <button wire:click="nextPage"
                     class="btn btn-sm btn-outline-secondary px-2 py-1"
                     style="font-size: 12px;"
-                    @disabled($page >= $totalPages)>
+                    @disabled($page>= $totalPages)>
                     Selanjutnya →
                 </button>
             </div>
-        @else
+            @else
             <div class="alert alert-info mb-0">
                 <i class="bi bi-info-circle me-2"></i>
                 Tidak ada data stok yang rendah
             </div>
-        @endif
+            @endif
+        </div>
     </div>
-</div>
 
-@push('scripts')
-<script>
-    document.addEventListener('livewire:load', () => {
-        Livewire.on('page-updated', ({ page }) => {
-            const input = document.querySelector('input[wire\\:model="pageInput"]');
-            if (input) input.value = page;
+    @push('scripts')
+    <script>
+        document.addEventListener('livewire:load', () => {
+            Livewire.on('page-updated', ({
+                page
+            }) => {
+                const input = document.querySelector('input[wire\\:model="pageInput"]');
+                if (input) input.value = page;
+            });
         });
-    });
-</script>
-@endpush
+    </script>
+    @endpush

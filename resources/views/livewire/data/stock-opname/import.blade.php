@@ -31,7 +31,6 @@ new class extends Component
     public function mount()
     {
         $this->selectedYear = date('Y'); // Default ke tahun sekarang
-        // Tambahkan ini untuk mengatur bulan default ke bulan saat ini
         $months = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
         $currentMonthIndex = date('n') - 1; // date('n') -> 1 s.d. 12, index array -> 0 s.d. 11
         $this->selectedMonth = $months[$currentMonthIndex];
@@ -39,7 +38,7 @@ new class extends Component
 
     public function import()
     {
-        // 3. Validasi akan otomatis memeriksa file, bulan, dan tahun
+        // Validasi akan otomatis memeriksa file, bulan, dan tahun
         $this->validate();
 
         try {
