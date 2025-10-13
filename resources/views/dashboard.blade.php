@@ -8,15 +8,7 @@
             </div>
 
             <div class="overflow-hidden rounded border mb-4" style="min-height: 200px;">
-                <livewire:dashboard.stack-bar-stok />
-
-            </div>
-
-            <div class="overflow-hidden rounded border mb-4" style="min-height: 300px;">
                 <livewire:dashboard.salesVSbuy />
-            </div>
-            <div class="overflow-hidden rounded border mb-4">
-                <livewire:dashboard.returs-chart />
             </div>
         </div>
         <div class="col-lg-4 d-flex flex-column gap-4">
@@ -27,7 +19,18 @@
             <div class="overflow-hidden rounded border ">
                 <livewire:dashboard.top-selling-items />
             </div>
-
+        </div>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="overflow-hidden rounded border mb-4" style="min-height: 300px;">
+                <livewire:dashboard.stack-bar-stok />
+            </div>
+            <div class="overflow-hidden rounded border mb-4">
+                <livewire:dashboard.returs-chart />
+            </div>
+        </div>
+        <div class="col-lg-6 d-flex flex-column gap-4">
             <div class="overflow-hidden rounded border " style="min-height: 500px;">
                 <livewire:dashboard.stock-remain />
             </div>
