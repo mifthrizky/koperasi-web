@@ -24,8 +24,12 @@
                 <livewire:dashboard.profit/>
             </div>
 
-            <div class="overflow-hidden rounded border flex-grow-1" style="min-height: 300px;">
+            <div class="overflow-hidden rounded border ">
                 <livewire:dashboard.top-selling-items />
+            </div>
+
+            <div class="overflow-hidden rounded border " style="min-height: 500px;">
+                <livewire:dashboard.stock-remain />
             </div>
         </div>
     </div>

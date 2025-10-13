@@ -57,8 +57,8 @@ new class extends Component
         ];
 
         // Limit 10 item teratas
-        $pipeline[] = ['$limit' => 20];
-
+        $pipeline[] = ['$limit' => 10];
+        
         // Project untuk format hasil
         $pipeline[] = [
             '$project' => [
@@ -85,7 +85,7 @@ new class extends Component
 ?>
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header ">
         <h5 class="card-title mb-0">
             Top Barang Terlaris
             @if($filterMonth || $filterYear)
