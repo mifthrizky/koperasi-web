@@ -19,6 +19,7 @@ class Penjualan extends Model
         'Kode_Item',
         'Nama_Item',
         'Jenis',
+        'Merek',
         'Jumlah',
         'Satuan',
         'Total_Harga',

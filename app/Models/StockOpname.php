@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use MongoDB\Laravel\Eloquent\Model;
+use App\Models\Barang;
 
 class StockOpname extends Model
 {
@@ -15,7 +16,6 @@ class StockOpname extends Model
      *
      * @var array<int, string>
      */
-
     protected $fillable = [
         'Kode_Item',
         'Nama_Item',
@@ -23,7 +23,27 @@ class StockOpname extends Model
         'Stok_Keluar',
         'Stok_Retur',
         'Stock_Opname',
-        'Keterangan'
+        'Keterangan',
+        'Bulan',
+        'Tahun',
+        'petugas',
+    ];
+
+    /**
+     * TAMBAHKAN BLOK INI
+     * ==============================================================
+     * The attributes that should be cast.
+     * Ini akan memastikan tipe data selalu konsisten saat diakses.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'Kode_Item' => 'string',
+        'Nama_Item' => 'string',
+        'Stok_Masuk' => 'integer',
+        'Stok_Keluar' => 'integer',
+        'Stok_Retur' => 'integer',
+        'Stock_Opname' => 'integer',
     ];
 
     // Relasi ke Barang
@@ -43,11 +63,10 @@ class StockOpname extends Model
     public function getStokSistemAttribute(): int
     {
         // Ambil nilai dari atribut model, beri nilai default 0 jika null
-        $masuk = $this->Stok_Masuk ?? 0;
-        $keluar = $this->Stok_Keluar ?? 0;
-        $retur = $this->Stok_Retur ?? 0;
+        $masuk = (int) $this->Stok_Masuk ?? 0;
+        $keluar = (int) $this->Stok_Keluar ?? 0;
+        $retur = (int) $this->Stok_Retur ?? 0;
 
-        // Lakukan kalkulasi real-time
         return $masuk - $keluar - $retur;
     }
 }

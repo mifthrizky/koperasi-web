@@ -75,7 +75,7 @@ new class extends Component
         $stockItem->increment('Stok_Masuk', (int)$this->jumlah);
 
         session()->flash('success', 'Data pembelian berhasil ditambahkan dan stok telah diperbarui.');
-        return $this->redirectRoute('pembelian.index', navigate: true);
+        return redirect()->route('pembelian.index');
     }
 };
 ?>
@@ -116,12 +116,12 @@ new class extends Component
 
                 <div class="mb-3">
                     <label for="nama_item" class="form-label">Nama Item</label>
-                    <input type="text" class="form-control" id="nama_item" wire:model="nama_item" readonly>
+                    <input type="text" class="form-control" id="nama_item" wire:model="nama_item" value="{{$nama_item ?? ''}}" readonly>
                 </div>
 
                 <div class="mb-3">
                     <label for="jenis" class="form-label">Jenis</label>
-                    <input type="text" class="form-control" id="jenis" wire:model="jenis" readonly>
+                    <input type="text" class="form-control" id="jenis" wire:model="jenis" value="{{$jenis ?? ''}}" readonly>
                 </div>
 
                 <div class="row mb-3">

@@ -33,7 +33,7 @@ new class extends Component
         ]);
 
         session()->flash('success', 'Data barang berhasil ditambahkan.');
-        return $this->redirectRoute('barang.index', navigate: true);
+        return redirect()->route('barang.index');
     }
 }; ?>
 

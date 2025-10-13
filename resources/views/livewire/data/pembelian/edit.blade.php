@@ -67,7 +67,7 @@ new class extends Component
         // --- AKHIR BAGIAN PERBAIKAN ---
 
         session()->flash('success', 'Data pembelian berhasil diperbarui dan stok telah disesuaikan.');
-        return $this->redirectRoute('pembelian.index', navigate: true);
+        return redirect()->route('pembelian.index');
     }
 };
 ?>

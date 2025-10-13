@@ -32,7 +32,6 @@ new class extends Component
             return;
         }
 
-        // --- BAGIAN KUNCI YANG DIPERBAIKI ---
         $pembelian = Pembelian::find($this->pembelianIdToDelete);
 
         if ($pembelian) {
@@ -46,9 +45,9 @@ new class extends Component
         } else {
             session()->flash('error', 'Gagal menghapus data.');
         }
-        // --- AKHIR BAGIAN PERBAIKAN ---
 
         $this->pembelianIdToDelete = null;
+        $this->dispatch('$refresh');
     }
 
     #[Computed]
@@ -88,7 +87,6 @@ new class extends Component
 
     public function with(): array
     {
-        // ... (fungsi with tidak berubah) ...
         $pembelians = Pembelian::query()
             ->when($this->selectedMonth, fn($query) => $query->where('Bulan', $this->selectedMonth))
             ->when($this->search, function ($query) {
@@ -133,9 +131,14 @@ new class extends Component
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">Tabel Data Pembelian</h5>
-                <a href="{{ route('pembelian.create') }}" class="btn btn-primary" wire:navigate>
-                    <i class="bx bx-plus-circle me-1"></i> Tambah Data
-                </a>
+                <div>
+                    <a href="{{ route('pembelian.import') }}" class="btn btn-info me-2">
+                        <i class="bx bx-upload me-1"></i> Import dari Excel
+                    </a>
+                    <a href="{{ route('pembelian.create') }}" class="btn btn-primary" wire:navigate>
+                        <i class="bx bx-plus-circle me-1"></i> Tambah Data
+                    </a>
+                </div>
             </div>
             <div class="row">
                 <div class="col-md-4">
@@ -213,23 +216,23 @@ new class extends Component
 
 @script
 <script>
-    document.addEventListener('livewire:initialized', () => {
-        Livewire.on('show-delete-confirmation', () => {
-            Swal.fire({
-                title: 'Anda yakin?',
-                text: "Data yang dihapus tidak dapat dikembalikan!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Livewire.dispatch('deleteConfirmed')
-                }
-            })
-        });
+    // Listener ini akan dipasang sekali saat halaman dimuat dan lebih stabil
+    window.addEventListener('show-delete-confirmation', event => {
+        Swal.fire({
+            title: 'Anda yakin?',
+            text: "Data yang dihapus tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Kirim event kembali ke komponen Livewire yang aktif
+                Livewire.dispatch('deleteConfirmed')
+            }
+        })
     });
 </script>
 @endscript

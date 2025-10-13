@@ -23,7 +23,7 @@ class Retur extends Model
         'Jumlah',
         'Satuan',
         'Harga',
-        'Pot._%', // Nama kolom dengan spasi dan karakter khusus
+        'Potongan',
         'Total_Harga',
         'Bulan',
         'Tahun',

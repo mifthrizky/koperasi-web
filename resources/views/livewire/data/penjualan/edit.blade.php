@@ -45,12 +45,12 @@ new class extends Component
     public function update()
     {
 
-        // 1. Hitung selisih antara jumlah lama dan jumlah baru
+        // Hitung selisih antara jumlah lama dan jumlah baru
         $jumlahLama = $this->penjualan->Jumlah;
         $jumlahBaru = (int) $this->jumlah;
         $selisih = $jumlahBaru - $jumlahLama;
 
-        // 2. Jika ada perubahan jumlah, update stok
+        // Jika ada perubahan jumlah, update stok
         if ($selisih !== 0) {
             $stockItem = StockOpname::where('Kode_Item', (int)$this->penjualan->Kode_Item)->first();
             if ($stockItem) {
@@ -59,7 +59,7 @@ new class extends Component
             }
         }
 
-        // 3. Update data penjualannya dengan memetakan properti ke nama kolom yang benar
+        // Update data penjualannya dengan memetakan properti ke nama kolom yang benar
         $this->penjualan->update([
             'Kode_Item'   => (int) $this->kode_item,
             'Nama_Item'   => $this->nama_item,
@@ -71,7 +71,7 @@ new class extends Component
         ]);
 
         session()->flash('success', 'Data penjualan berhasil diperbarui dan stok telah disesuaikan.');
-        return $this->redirectRoute('penjualan.index', navigate: true);
+        return redirect()->route('penjualan.index');
     }
 };
 ?>

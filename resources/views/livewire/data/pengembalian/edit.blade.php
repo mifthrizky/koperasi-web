@@ -92,12 +92,12 @@ new class extends Component
         ]);
 
         session()->flash('success', 'Data pengembalian berhasil diperbarui dan stok telah disesuaikan.');
-        return $this->redirectRoute('pengembalian.index', navigate: true);
+        return redirect()->route('pengembalian.index');
     }
 
     public function cancel()
     {
-        return $this->redirectRoute('pengembalian.index', navigate: true);
+        return redirect()->route('pengembalian.index');
     }
 };
 ?>

@@ -20,7 +20,6 @@ class Barang extends Model
         'Kode_Item',
         'Nama_Item',
         'Jenis',
-        'Harga_Satuan'
     ];
 
     // Relasi ke Pembelian

@@ -62,7 +62,7 @@ new class extends Component
             return;
         }
 
-        // 1. Catat transaksi penjualan
+        // Catat transaksi penjualan
         Penjualan::create([
             'Kode_Item'   => (int) $this->kode_item,
             'Nama_Item'   => $this->nama_item,
@@ -74,10 +74,10 @@ new class extends Component
             'Tahun'       => (int) $this->tahun,
         ]);
 
-        // 2. Cari item yang sesuai di collection stock_opnames
+        // Cari item yang sesuai di collection stock_opnames
         $stockItem = StockOpname::where('Kode_Item', (int)$this->kode_item)->first();
 
-        // 3. Jika item ditemukan, tambahkan jumlah keluar menggunakan increment
+        // Jika item ditemukan, tambahkan jumlah keluar menggunakan increment
         if ($stockItem) {
             $stockItem->increment('Stok_Keluar', (int)$this->jumlah);
         } else {
@@ -86,7 +86,7 @@ new class extends Component
         }
 
         session()->flash('success', 'Data penjualan berhasil ditambahkan dan stok telah diperbarui.');
-        return $this->redirectRoute('penjualan.index', navigate: true);
+        return redirect()->route('penjualan.index');
     }
 };
 ?>
@@ -101,7 +101,6 @@ new class extends Component
     </div>
     @endif
 
-    {{-- Sisa kode view Anda tidak perlu diubah sama sekali --}}
     <h4 class="py-3 mb-4">
         <span class="text-muted fw-light">Data Penjualan /</span> Tambah Data
     </h4>
@@ -112,7 +111,6 @@ new class extends Component
         </div>
         <div class="card-body">
             <form wire:submit="save">
-                {{-- KODE VIEW ANDA DI SINI (TIDAK ADA PERUBAHAN) --}}
                 <div class="mb-3">
                     <label for="kode_item" class="form-label">Kode Item</label>
                     <input type="number"
@@ -133,12 +131,12 @@ new class extends Component
 
                 <div class="mb-3">
                     <label for="nama_item" class="form-label">Nama Item</label>
-                    <input type="text" class="form-control" id="nama_item" wire:model="nama_item" readonly>
+                    <input type="text" class="form-control" id="nama_item" wire:model="nama_item" value="{{$nama_item ?? ''}}" readonly>
                 </div>
 
                 <div class="mb-3">
                     <label for="jenis" class="form-label">Jenis</label>
-                    <input type="text" class="form-control" id="jenis" wire:model="jenis" readonly>
+                    <input type="text" class="form-control" id="jenis" wire:model="jenis" value="{{$jenis ?? ''}}" readonly>
                 </div>
 
                 <div class="row mb-3">
