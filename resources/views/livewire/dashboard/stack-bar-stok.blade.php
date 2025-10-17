@@ -18,12 +18,23 @@ new class extends Component
         // Aggregation pipeline 
         $pipeline = [];
 
-        // Mencari Jenis
+        // Mencari Jenis dengan lookup yang sudah dikonversi
         $pipeline[] = [
             '$lookup' => [
                 'from' => 'barangs',
-                'localField' => 'Kode_Item',
-                'foreignField' => 'Kode_Item',
+                'let' => ['kode_item_string' => '$Kode_Item'],
+                'pipeline' => [
+                    [
+                        '$match' => [
+                            '$expr' => [
+                                '$eq' => [
+                                    ['$toString' => '$Kode_Item'],
+                                    '$$kode_item_string'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
                 'as' => 'info_item'
             ]
         ];

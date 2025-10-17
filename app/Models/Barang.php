@@ -25,7 +25,7 @@ class Barang extends Model
     // Relasi ke Pembelian
     public function pembelians()
     {
-        return $this->hasMany(Penjualan::class, 'Kode_Item', 'Kode_Item');
+        return $this->hasMany(Pembelian::class, 'Kode_Item', 'Kode_Item');
     }
 
     // Relasi ke Penjualan
@@ -43,6 +43,6 @@ class Barang extends Model
     // Relasi ke StockOpname
     public function StockOpname()
     {
-        return $this->hasMany(Retur::class, 'Kode_Item', 'Kode_Item');
+        return $this->hasMany(StockOpname::class, 'Kode_Item', 'Kode_Item');
     }
 }
