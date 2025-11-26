@@ -22,14 +22,14 @@ new class extends Component
         $pipeline[] = [
             '$lookup' => [
                 'from' => 'barangs',
-                'let' => ['kode_item_string' => '$Kode_Item'],
+                'let' => ['kode_item_raw' => '$Kode_Item'],
                 'pipeline' => [
                     [
                         '$match' => [
                             '$expr' => [
                                 '$eq' => [
                                     ['$toString' => '$Kode_Item'],
-                                    '$$kode_item_string'
+                                    ['$toString' => '$$kode_item_raw']
                                 ]
                             ]
                         ]

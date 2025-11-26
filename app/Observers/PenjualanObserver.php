@@ -12,20 +12,25 @@ class PenjualanObserver
      */
     public function created(Penjualan $penjualan): void
     {
-        StockOpname::updateOrCreate(
+        // Ganti updateOrCreate dengan firstOrCreate
+        $stockItem = StockOpname::firstOrCreate(
             [
                 'Kode_Item' => $penjualan->Kode_Item,
                 'Bulan'     => $penjualan->Bulan,
                 'Tahun'     => (int)$penjualan->Tahun,
             ],
-            // Nilai yang akan di-update atau di-create
+            // Nilai default untuk data baru (semua 0 dulu)
             [
-                'Nama_Item'   => $barang->Nama_Item ?? 'Nama Tidak Ditemukan',
-                'Stok_Masuk'  => \Illuminate\Support\Facades\DB::raw("`Stok_Masuk` + 0"),
-                'Stok_Keluar' => \Illuminate\Support\Facades\DB::raw("`Stok_Keluar` + {$penjualan->Jumlah}"),
-                'Stok_Retur'  => \Illuminate\Support\Facades\DB::raw("`Stok_Retur` + 0"),
+                // FIX: Gunakan $penjualan->Nama_Item, bukan $barang->Nama_Item (karena variabel $barang tidak ada)
+                'Nama_Item'   => $penjualan->Nama_Item ?? 'Nama Tidak Ditemukan',
+                'Stok_Masuk'  => 0,
+                'Stok_Keluar' => 0,
+                'Stok_Retur'  => 0,
             ]
         );
+
+        // Lakukan increment terpisah agar aman di MongoDB
+        $stockItem->increment('Stok_Keluar', $penjualan->Jumlah);
     }
 
     /**

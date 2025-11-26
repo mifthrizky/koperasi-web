@@ -10,17 +10,7 @@ class BarangObserver
     /**
      * Handle the Barang "created" event.
      */
-    public function created(Barang $barang): void
-    {
-        StockOpname::create([
-            'Kode_Item'    => $barang->Kode_Item,    // Sesuaikan dengan 'Kode_Item'
-            'Nama_Item'    => $barang->Nama_Item,    // Sesuaikan dengan 'Nama_Item'
-            'Stok_Masuk'   => 0,                      // Set nilai awal
-            'Stok_Keluar'  => 0,                      // Set nilai awal
-            'Stok_Retur'   => 0,                      // Set nilai awal
-            'Stock_Opname' => null,                      // Set nilai awal untuk stok opname
-        ]);
-    }
+    public function created(Barang $barang): void {}
 
     /**
      * Handle the Barang "updated" event.
@@ -35,6 +25,7 @@ class BarangObserver
      */
     public function deleted(Barang $barang): void
     {
+        // Ini boleh dibiarkan (Hapus semua riwayat stok jika barang induk dihapus)
         StockOpname::where('Kode_Item', $barang->Kode_Item)->delete();
     }
 

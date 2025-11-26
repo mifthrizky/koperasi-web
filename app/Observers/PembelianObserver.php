@@ -21,7 +21,6 @@ class PembelianObserver
             ]
         );
 
-
         // Gunakan firstOrCreate untuk menangani item baru yang belum ada stoknya.
         $stockItem = StockOpname::firstOrCreate(
             [
@@ -29,15 +28,15 @@ class PembelianObserver
                 'Bulan'     => $pembelian->Bulan,
                 'Tahun'     => (int)$pembelian->Tahun,
             ],
-            // Nilai yang akan di-update atau di-create
+            // Nilai default jika data BARU dibuat
             [
                 'Nama_Item' => $pembelian->Nama_Item,
-                // Gunakan DB::raw untuk melakukan increment secara aman
-                'Stok_Masuk' => \Illuminate\Support\Facades\DB::raw("`Stok_Masuk` + {$pembelian->Jumlah}")
+                'Stok_Masuk' => 0 // <--- CUKUP ISI 0 DI SINI
             ]
         );
 
         // Tambahkan stok masuk dari jumlah pembelian.
+        // Ini akan berlaku untuk data baru (0 + Jumlah) maupun data lama (Stok Lama + Jumlah)
         $stockItem->increment('Stok_Masuk', $pembelian->Jumlah);
     }
 
