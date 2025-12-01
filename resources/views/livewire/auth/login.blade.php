@@ -76,9 +76,7 @@ new #[Layout('components.layouts.auth')] class extends Component {
 @section('title', 'Halaman Login Koperasi Pegawai')
 
 @section('page-style')
-@vite([
-'resources/assets/css/custom-login.css' // Pastikan ini di sini
-])
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 @endsection
 
 <div class="login-container">
