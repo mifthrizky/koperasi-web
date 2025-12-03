@@ -7,9 +7,8 @@ Route::view('/', 'dashboard')
   ->middleware(['auth', 'verified'])
   ->name('dashboard');
 
-Route::view('dashboard', 'dashboard')
-  ->middleware(['auth', 'verified'])
-  ->name('dashboard');
+Route::view('/dashboard', 'dashboard')
+  ->middleware(['auth', 'verified']);
 
 Route::middleware(['auth'])->group(function () {
   Route::redirect('settings', 'settings/profile');
@@ -35,8 +34,6 @@ Route::middleware(['auth'])->group(function () {
   Volt::route('data/penjualan/tambah', 'data.penjualan.create')->name('penjualan.create');
   Volt::route('data/penjualan/{penjualan}/edit', 'data.penjualan.edit')->name('penjualan.edit');
 
-  Volt::route('data/pengembalian', 'data.pengembalian.index')->name('pengembalian.index');
-  Volt::route('data/pengembalian', 'data.pengembalian.index')->name('pengembalian.index');
   Volt::route('data/pengembalian/tambah', 'data.pengembalian.create')->name('pengembalian.create');
   Volt::route('data/pengembalian/{retur}/edit', 'data.pengembalian.edit')->name('retur.edit');
 

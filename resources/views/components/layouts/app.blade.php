@@ -45,18 +45,17 @@
 
   <!-- Pop up -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  
+
   @livewireScripts
   {{-- tempat semua script tambahan dari komponen Livewire --}}
 
- 
+
 
   @stack('scripts')
- <!-- pie chart -->
+  <!-- pie chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 
-</script>
+  </script>
 </body>
 
 </html>

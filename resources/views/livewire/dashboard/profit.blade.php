@@ -11,8 +11,18 @@ new class extends Component
     public string $filterYear = '';
 
     private const MONTHS_ORDER = [
-        'JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI',
-        'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'
+        'JANUARI',
+        'FEBRUARI',
+        'MARET',
+        'APRIL',
+        'MEI',
+        'JUNI',
+        'JULI',
+        'AGUSTUS',
+        'SEPTEMBER',
+        'OKTOBER',
+        'NOVEMBER',
+        'DESEMBER'
     ];
 
     #[On('filter-updated')]
@@ -37,7 +47,7 @@ new class extends Component
         }
 
         $previousMonth = $this->getPreviousMonth();
-        
+
         // Jika tidak ada bulan sebelumnya (misal Januari), return 0
         if (!$previousMonth) {
             return 0;
@@ -58,13 +68,13 @@ new class extends Component
     public function percentageColor()
     {
         $percentage = $this->profitPercentage();
-        
+
         if ($percentage > 0) {
             return 'text-success'; // Merah untuk profit naik (untung)
         } elseif ($percentage < 0) {
             return 'text-danger'; // Biru untuk profit turun (rugi)
         }
-        
+
         return 'text-secondary'; // Abu-abu untuk tidak ada perubahan (0)
     }
 
@@ -82,21 +92,21 @@ new class extends Component
         }
 
         // Build pipeline - hanya tambahkan $match jika ada filter
-        $buildPipeline = function() use ($filter) {
+        $buildPipeline = function () use ($filter) {
             $pipeline = [];
-            
+
             // Hanya tambahkan $match jika filter tidak kosong
             if (!empty($filter)) {
                 $pipeline[] = ['$match' => $filter];
             }
-            
+
             $pipeline[] = [
                 '$group' => [
                     '_id' => null,
                     'total' => ['$sum' => '$Total_Harga']
                 ]
             ];
-            
+
             return $pipeline;
         };
 
@@ -104,14 +114,14 @@ new class extends Component
         $penjualanResult = $mongodb->selectCollection('penjualans')
             ->aggregate($buildPipeline())
             ->toArray();
-        
+
         $totalPenjualan = !empty($penjualanResult) ? $penjualanResult[0]->total : 0;
 
         // Total Pembelian
         $pembelianResult = $mongodb->selectCollection('pembelians')
             ->aggregate($buildPipeline())
             ->toArray();
-        
+
         $totalPembelian = !empty($pembelianResult) ? $pembelianResult[0]->total : 0;
 
         // Total Retur (jika ada collection returs)
@@ -119,7 +129,7 @@ new class extends Component
             $returResult = $mongodb->selectCollection('returs')
                 ->aggregate($buildPipeline())
                 ->toArray();
-            
+
             $totalRetur = !empty($returResult) ? $returResult[0]->total : 0;
         } catch (\Exception $e) {
             // Jika collection returs tidak ada
@@ -150,7 +160,7 @@ new class extends Component
     public function with(): array
     {
         $percentage = $this->profitPercentage();
-        
+
         return [
             'currentProfit' => $this->currentProfit(),
             'percentage' => round($percentage, 2),
@@ -168,7 +178,7 @@ new class extends Component
         <!-- Header dengan Judul dan Persentase -->
         <div class="d-flex justify-content-between align-items-center mb-2">
             <h6 class="text-muted mb-0">Keuntungan</h6>
-            
+
             <span class="fw-semibold {{ $percentageColor }}">
                 {{ $percentage > 0 ? '+' : '' }}{{ number_format($percentage, 2) }}%
             </span>
@@ -176,22 +186,22 @@ new class extends Component
 
         <!-- Sub label filter -->
         @if($filterMonth || $filterYear)
-            <small class="text-muted d-block mb-3">
-                {{ $filterMonth ?: 'Semua' }} {{ $filterYear ?: '' }}
-            </small>
+        <small class="text-muted d-block mb-3">
+            {{ $filterMonth ?: 'Semua' }} {{ $filterYear ?: '' }}
+        </small>
         @else
-            <small class="text-muted d-block mb-3">Keseluruhan</small>
+        <small class="text-muted d-block mb-3">Keseluruhan</small>
         @endif
 
         <!-- Nilai Keuntungan -->
         <h3 class="mb-0 fw-bold {{ $currentProfit < 0 ? 'text-danger' : 'text-dark' }}">
             Rp {{ number_format(abs($currentProfit), 0, ',', '.') }}
         </h3>
-        
+
         @if($currentProfit < 0)
             <small class="text-danger">
-                <i class="bi bi-exclamation-triangle-fill me-1"></i>Rugi
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>Rugi
             </small>
-        @endif
+            @endif
     </div>
 </div>

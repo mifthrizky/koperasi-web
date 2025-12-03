@@ -10,88 +10,73 @@ new class extends Component
 
     public function chartData()
     {
-        $mongoDB = DB::getMongoDB();
+        $collection = DB::getMongoDB()->selectCollection('stock_opnames');
 
-        // koleksi utama yang di-aggregate
-        $collection = $mongoDB->selectCollection('stock_opnames');
+        $pipeline = [
 
-        // Aggregation pipeline 
-        $pipeline = [];
+            // SIMPLE lookup
+            [
+                '$lookup' => [
+                    'from'         => 'barangs',
+                    'localField'   => 'Kode_Item',
+                    'foreignField' => 'Kode_Item',
+                    'as'           => 'info_item'
+                ]
+            ],
 
-        // Mencari Jenis dengan lookup yang sudah dikonversi
-        $pipeline[] = [
-            '$lookup' => [
-                'from' => 'barangs',
-                'let' => ['kode_item_raw' => '$Kode_Item'],
-                'pipeline' => [
-                    [
-                        '$match' => [
-                            '$expr' => [
-                                '$eq' => [
-                                    ['$toString' => '$Kode_Item'],
-                                    ['$toString' => '$$kode_item_raw']
-                                ]
-                            ]
-                        ]
+            // Ambil Jenis item
+            [
+                '$addFields' => [
+                    'Jenis' => ['$arrayElemAt' => ['$info_item.Jenis', 0]]
+                ]
+            ],
+
+            // Hilangkan data yang tidak punya Jenis
+            [
+                '$match' => [
+                    'Jenis' => ['$exists' => true, '$ne' => null]
+                ]
+            ],
+
+            // Kalkulasi langsung
+            [
+                '$group' => [
+                    '_id'         => '$Jenis',
+                    'stokMasuk'   => ['$sum' => '$Stok_Masuk'],
+                    'stokKeluar'  => ['$sum' => '$Stok_Keluar'],
+                ]
+            ],
+
+            // Hitung NetStock di sini
+            [
+                '$addFields' => [
+                    'NetStock' => [
+                        '$subtract' => ['$stokMasuk', '$stokKeluar']
                     ]
-                ],
-                'as' => 'info_item'
-            ]
-        ];
+                ]
+            ],
 
-        $pipeline[] = [
-            '$addFields' => [
-                // Ambil field Jenis dari record pertama hasil lookup (karena Jenis harusnya sama)
-                'Jenis' => [
-                    '$arrayElemAt' => ['$info_item.Jenis', 0]
+            // Sort berdasarkan NetStock
+            [
+                '$sort' => [
+                    'NetStock' => -1
+                ]
+            ],
+
+            // Format final
+            [
+                '$project' => [
+                    '_id'          => 0,
+                    'jenis'        => '$_id',
+                    'stok_masuk'   => '$stokMasuk',
+                    'stok_keluar'  => ['$multiply' => ['$stokKeluar', -1]]
                 ]
             ]
         ];
 
-        // Filtering: Hapus dokumen yang Kode_Item-nya tidak ditemukan Jenis-nya di koleksi 'barangs'
-        $pipeline[] = [
-            '$match' => [
-                'Jenis' => ['$exists' => true, '$ne' => null]
-            ]
-        ];
-
-        // Group by Jenis dan sum Jumlah
-        $pipeline[] = [
-            '$group' => [
-                '_id' => '$Jenis',
-                'stokMasuk' => ['$sum' => '$Stok_Masuk'],
-                'stokKeluar' => ['$sum' => '$Stok_Keluar']
-            ]
-        ];
-
-        // menambah netstock untuk sort
-        $pipeline[] = [
-            '$addFields' => [
-                'NetStock' => ['$subtract' => ['$stokMasuk', '$stokKeluar']]
-            ]
-        ];
-
-        // Sort descending berdasarkan totalJumlah
-        $pipeline[] = [
-            '$sort' => ['NetStock' => -1]
-        ];
-
-        // Project untuk format hasil
-        $pipeline[] = [
-            '$project' => [
-                '_id' => 0,
-                'jenis' => '$_id',
-                'stok_masuk' => '$stokMasuk',
-                'stok_keluar' => ['$multiply' => ['$stokKeluar', -1]],
-            ]
-        ];
-
-        $results = $collection->aggregate($pipeline)->toArray();
-
-        return array_map(function ($item) {
-            return (array) $item;
-        }, $results);
+        return $collection->aggregate($pipeline)->toArray();
     }
+
 
     public function with()
     {
